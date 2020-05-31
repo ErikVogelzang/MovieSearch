@@ -1,5 +1,11 @@
-<menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    tools:context="com.example.moviesearch.MainActivity">
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/MovieSearchFragment"
+        android:icon="@drawable/ic_search_black_24dp"
+        android:title="@string/search_frag_title"/>
+    <item
+        android:id="@+id/MoviesSavedFragment"
+        android:icon="@drawable/ic_save_black_24dp"
+        android:title="@string/saved_frag_title"/>
 </menu>

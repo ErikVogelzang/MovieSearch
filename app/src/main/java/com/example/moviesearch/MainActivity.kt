@@ -1,12 +1,14 @@
 package com.example.moviesearch
 
-import android.os.Bundle
-import com.google.android.material.snackbar.Snackbar
 import androidx.appcompat.app.AppCompatActivity
-import android.view.Menu
-import android.view.MenuItem
-
+import android.os.Bundle
+import android.view.View
+import androidx.navigation.findNavController
+import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.NavigationUI
+import androidx.navigation.ui.setupWithNavController
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.content_main.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -14,22 +16,28 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
-
+        initNavigation()
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        menuInflater.inflate(R.menu.menu_main, menu)
-        return true
+    private fun initNavigation() {
+        val navController = findNavController(R.id.navHostFragment)
+        NavigationUI.setupWithNavController(navView, navController)
+        val appBarConfiguration = AppBarConfiguration(navController.graph)
+        toolbar.setupWithNavController(navController, appBarConfiguration)
+
+        navController.addOnDestinationChangedListener {
+                controller, destination, arguments ->
+            when (destination.id) {
+                R.id.MovieSearchFragment -> showFragmentUI(true)
+                R.id.MoviesSavedFragment -> showFragmentUI(true)
+            }
+        }
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        return when (item.itemId) {
-            //
-            else -> super.onOptionsItemSelected(item)
+    private fun showFragmentUI(navBar: Boolean) {
+        when (navBar) {
+            true -> navView.visibility = View.VISIBLE
+            false -> navView.visibility = View.GONE
         }
     }
 }
