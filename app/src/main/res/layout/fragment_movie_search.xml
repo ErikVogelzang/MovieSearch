@@ -5,14 +5,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/cardview_dark_background"
-    tools:context=".MovieSearchFragment">
+    tools:context=".ui.MovieSearchFragment">
 
     <Spinner
         android:id="@+id/ddCatPrimary"
-        android:layout_width="166dp"
-        android:layout_height="58dp"
+        android:layout_width="165dp"
+        android:layout_height="45dp"
         android:layout_marginStart="19dp"
-        android:layout_marginTop="16dp"
         android:background="@drawable/custom_spinner"
         android:dropDownWidth="wrap_content"
         android:popupBackground="@color/colorGrey"
@@ -23,8 +22,7 @@
     <Spinner
         android:id="@+id/ddCatSecondary"
         android:layout_width="166dp"
-        android:layout_height="58dp"
-        android:layout_marginTop="16dp"
+        android:layout_height="45dp"
         android:layout_marginEnd="19dp"
         android:background="@drawable/custom_spinner"
         android:dropDownWidth="wrap_content"
@@ -36,9 +34,9 @@
     <Spinner
         android:id="@+id/ddSortBy"
         android:layout_width="166dp"
-        android:layout_height="58dp"
+        android:layout_height="45dp"
         android:layout_marginStart="125dp"
-        android:layout_marginTop="96dp"
+        android:layout_marginTop="50dp"
         android:layout_marginEnd="125dp"
         android:background="@drawable/custom_spinner"
         android:dropDownWidth="wrap_content"
@@ -47,5 +45,17 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvMovies"
+        android:layout_width="391dp"
+        android:layout_height="561dp"
+        android:layout_marginTop="18dp"
+        android:background="@color/colorGrey"
+        android:padding="15dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/ddSortBy" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

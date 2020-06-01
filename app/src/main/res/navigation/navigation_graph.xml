@@ -7,12 +7,30 @@
 
     <fragment
         android:id="@+id/MovieSearchFragment"
-        android:name="com.example.moviesearch.MovieSearchFragment"
+        android:name="com.example.moviesearch.ui.MovieSearchFragment"
         android:label="Search"
-        tools:layout="@layout/fragment_movie_search" />
+        tools:layout="@layout/fragment_movie_search" >
+        <action
+            android:id="@+id/action_MovieSearchFragment_to_detailsFragment"
+            app:destination="@id/detailsFragment" />
+    </fragment>
     <fragment
         android:id="@+id/MoviesSavedFragment"
-        android:name="com.example.moviesearch.MoviesSavedFragment"
+        android:name="com.example.moviesearch.ui.MoviesSavedFragment"
         android:label="Saved"
-        tools:layout="@layout/fragment_movies_saved" />
+        tools:layout="@layout/fragment_movies_saved" >
+        <action
+            android:id="@+id/action_MoviesSavedFragment_to_detailsFragment"
+            app:destination="@id/detailsFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/detailsFragment"
+        android:name="com.example.moviesearch.ui.DetailsFragment"
+        android:label="Movie Details"
+        tools:layout="@layout/fragment_details" >
+        <argument
+            android:name="movieID"
+            app:argType="integer"
+            android:defaultValue="0" />
+    </fragment>
 </navigation>

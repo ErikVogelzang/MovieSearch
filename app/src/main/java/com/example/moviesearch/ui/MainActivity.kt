@@ -1,4 +1,4 @@
-package com.example.moviesearch
+package com.example.moviesearch.ui
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -7,6 +7,7 @@ import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.setupWithNavController
+import com.example.moviesearch.R
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 
@@ -30,6 +31,7 @@ class MainActivity : AppCompatActivity() {
             when (destination.id) {
                 R.id.MovieSearchFragment -> showFragmentUI(true)
                 R.id.MoviesSavedFragment -> showFragmentUI(true)
+                R.id.detailsFragment -> showFragmentUI(false)
             }
         }
     }
