@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Movie Search</string>
+    <string name="app_name">Search</string>
     <string name="search_frag_title">Search</string>
     <string name="saved_frag_title">Saved</string>
 </resources>

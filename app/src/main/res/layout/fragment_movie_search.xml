@@ -7,14 +7,45 @@
     android:background="@color/cardview_dark_background"
     tools:context=".MovieSearchFragment">
 
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="312dp"
-        android:layout_marginEnd="156dp"
-        android:text="MOVIESEARCH"
-        android:textColor="#FFFFFF"
+    <Spinner
+        android:id="@+id/ddCatPrimary"
+        android:layout_width="166dp"
+        android:layout_height="58dp"
+        android:layout_marginStart="19dp"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/custom_spinner"
+        android:dropDownWidth="wrap_content"
+        android:popupBackground="@color/colorGrey"
+        android:spinnerMode="dropdown"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Spinner
+        android:id="@+id/ddCatSecondary"
+        android:layout_width="166dp"
+        android:layout_height="58dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="19dp"
+        android:background="@drawable/custom_spinner"
+        android:dropDownWidth="wrap_content"
+        android:popupBackground="@color/colorGrey"
+        android:spinnerMode="dropdown"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <Spinner
+        android:id="@+id/ddSortBy"
+        android:layout_width="166dp"
+        android:layout_height="58dp"
+        android:layout_marginStart="125dp"
+        android:layout_marginTop="96dp"
+        android:layout_marginEnd="125dp"
+        android:background="@drawable/custom_spinner"
+        android:dropDownWidth="wrap_content"
+        android:popupBackground="@color/colorGrey"
+        android:spinnerMode="dropdown"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
