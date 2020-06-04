@@ -15,7 +15,7 @@ interface MovieApi {
         @Query(Common.ADULT_QUERY) adult: Boolean,
         @Query(Common.VIDEO_QUERY) video: Boolean,
         @Query(Common.PAGE_QUERY) page: Int,
-        @Query(Common.YEAR_QUERY) year: String
+        @Query(Common.GENRES_QUERY) genres: String
     ): Call<MovieList>
 
     @GET

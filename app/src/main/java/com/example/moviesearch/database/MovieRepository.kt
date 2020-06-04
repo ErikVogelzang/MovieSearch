@@ -23,10 +23,9 @@ class MovieRepository {
 
     private val movieList = MutableLiveData<List<MovieItemSearch>>()
     private var movieDetails = MutableLiveData<MovieItemDetails>()
-    private var categoryPrimary = MutableLiveData<String>()
-    private var categorySecondary = MutableLiveData<String>()
-    private var sortBy = MutableLiveData<String>()
-    private fun removeQuotes(str: String): String {
+    private fun removeQuotes(str: String?): String {
+        if (str == null)
+            return Common.STRING_EMPTY
         return str.replace(Common.STRING_QUOTE, Common.STRING_EMPTY)
     }
 
@@ -38,30 +37,6 @@ class MovieRepository {
         return movieDetails
     }
 
-    fun getCategoryPrimary(): LiveData<String> {
-        return categoryPrimary
-    }
-
-    fun setCategoryPrimary(value: String) {
-        categoryPrimary.value = value
-    }
-
-    fun getCategorySecondary(): LiveData<String> {
-        return categorySecondary
-    }
-
-    fun setCategorySecondary(value: String) {
-        categorySecondary.value = value
-    }
-
-    fun getsortBy(): LiveData<String> {
-        return sortBy
-    }
-
-    fun setSortBy(value: String) {
-        sortBy.value = value
-    }
-
     private fun setMoviesLoadState() {
         val moviesLoadState = ArrayList<MovieItemSearch>()
         for (i in Common.MOVIE_START_COUNTER..Common.DEFAULT_PAGE_MOVIES) {
@@ -70,7 +45,7 @@ class MovieRepository {
         movieList.value = moviesLoadState
     }
 
-    fun setMovieList(year: String, apiKey: String) {
+    fun setMovieList(genres: String, sortBy: String, apiKey: String) {
         setMoviesLoadState()
 
         val moviesFound = ArrayList<MovieItemSearch>()
@@ -80,7 +55,7 @@ class MovieRepository {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         val movieApi = retrofit.create(MovieApi::class.java)
-        val jsonCall = movieApi.getMovies(apiKey, Common.DEFAULT_LANG, Common.DEFAULT_SORT, false, false, Common.DEFAULT_PAGE, year)
+        val jsonCall = movieApi.getMovies(apiKey, Common.DEFAULT_LANG, sortBy, false, false, Common.DEFAULT_PAGE, genres)
         jsonCall.enqueue(object: Callback<MovieList>{
             override fun onFailure(call: Call<MovieList>, t: Throwable) {
             }
@@ -119,20 +94,20 @@ class MovieRepository {
                     return
                 }
                 var results = response.body()
-                val posterPath = removeQuotes(results!!.getPosterPath())
-                val backdropPath = removeQuotes(results.getBackdropPath())
-                val budget = removeQuotes(results.getBudget())
-                val imdbID = removeQuotes(results.getIMDBID())
-                val language = removeQuotes(results.getLanguage())
-                val title = removeQuotes(results.getTitle())
-                val overview = removeQuotes(results.getOverview())
-                val release = removeQuotes(results.getRelease())
-                val revenue = removeQuotes(results.getRevenue())
-                val length = removeQuotes(results.getRuntime())
-                val rating = removeQuotes(results.getRating())
-                val trailerPath = findYoutubeTrailerKey(results.getTrailers())
-                val genres = getGenresFromArray(results.getGenres())
-                val cast = getCastFromArray(results.getCast())
+                val posterPath = removeQuotes(results?.getPosterPath())
+                val backdropPath = removeQuotes(results?.getBackdropPath())
+                val budget = removeQuotes(results?.getBudget())
+                val imdbID = removeQuotes(results?.getIMDBID())
+                val language = removeQuotes(results?.getLanguage())
+                val title = removeQuotes(results?.getTitle())
+                val overview = removeQuotes(results?.getOverview())
+                val release = removeQuotes(results?.getRelease())
+                val revenue = removeQuotes(results?.getRevenue())
+                val length = removeQuotes(results?.getRuntime())
+                val rating = removeQuotes(results?.getRating())
+                val trailerPath = findYoutubeTrailerKey(results!!.getTrailers())
+                val genres = getGenresFromArray(results!!.getGenres())
+                val cast = getCastFromArray(results!!.getCast())
                 movieDetails.value = MovieItemDetails(posterPath, backdropPath, budget, genres, imdbID, language, title, overview, release, revenue, length, rating, trailerPath, cast, false)
             }
         })

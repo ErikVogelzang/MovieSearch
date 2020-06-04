@@ -25,6 +25,8 @@ import com.example.moviesearch.common.Common
 import com.example.moviesearch.model.MovieItemSearch
 import com.example.moviesearch.model.MovieViewModel
 import kotlinx.android.synthetic.main.fragment_movie_search.*
+import java.util.*
+import kotlin.collections.ArrayList
 
 /**
  * A simple [Fragment] subclass.
@@ -34,6 +36,8 @@ class MovieSearchFragment : Fragment() {
     private lateinit var movieListViewModel: MovieViewModel
     private val movieList = arrayListOf<MovieItemSearch>()
     private lateinit var movieAdapter: MovieAdapter
+
+
 
     private val categories = arrayOf (
         "Select primary genre",
@@ -224,20 +228,10 @@ class MovieSearchFragment : Fragment() {
         rvMovies.adapter = movieAdapter
     }
 
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        super.onConfigurationChanged(newConfig)
-        movieListViewModel.getMoviesSearch(
-            "2018",
-            getString(R.string.movie_db_api_key)
-        )
-        //movieListViewModel.setCatagoryPrimaryLiveData(ddCatPrimary.selectedItem.toString())
-    }
-
     private fun onCategoriesChanged() {
-        if ("2018" == Common.lastYear || ddCatPrimary.selectedItemPosition == 0 || ddSortBy.selectedItemPosition == 0)
+        if (ddCatPrimary.selectedItemPosition == 0 || ddSortBy.selectedItemPosition == 0)
             return
-        movieListViewModel.getMoviesSearch("2018", getString(R.string.movie_db_api_key))
-        Common.lastYear = "2018"
+        movieListViewModel.getMoviesSearch(getGenreQuery(), getsortByQuery(), getString(R.string.movie_db_api_key))
     }
 
     private fun calculateSpanCount(): Int{
@@ -261,5 +255,59 @@ class MovieSearchFragment : Fragment() {
         Common.sortBySelected = ddSortBy.selectedItemPosition
         Common.searchFragmentDestroyed = true
         super.onDestroyView()
+    }
+
+    private fun getGenreID(genre: String) : String {
+        return when (genre) {
+            "Action" -> "28"
+            "Adventure" -> "12"
+            "Animation" -> "16"
+            "Comedy" -> "35"
+            "Crime" -> "80"
+            "Documentary" -> "99"
+            "Drama" -> "18"
+            "Family" -> "10751"
+            "Fantasy" -> "14"
+            "History" -> "36"
+            "Horror" -> "27"
+            "Music" -> "10402"
+            "Mystery" -> "9648"
+            "Romance" -> "10749"
+            "Science Fiction" -> "878"
+            "TV Movie" -> "10770"
+            "Thriller" -> "53"
+            "War" -> "37"
+            "Western" -> "10752"
+            else -> Common.STRING_EMPTY
+        }
+    }
+
+    private fun getGenreQuery() : String {
+        val primary = getGenreID(ddCatPrimary.selectedItem.toString())
+        val secondary = getGenreID(ddCatSecondary.selectedItem.toString())
+        if (primary == Common.STRING_EMPTY)
+            return Common.STRING_EMPTY
+        if (secondary == Common.STRING_EMPTY)
+            return primary
+        else
+            return primary.plus(", ").plus(secondary)
+    }
+
+    private fun getsortByQuery() : String {
+        return when (ddSortBy.selectedItem.toString()) {
+            "Popularity Asc" -> "popularity.asc"
+            "Popularity Desc" -> "popularity.desc"
+            "Release Asc" -> "release_date.asc"
+            "Release Desc" -> "release_date.desc"
+            "Revenue Asc" -> "revenue.asc"
+            "Revenue Desc" -> "revenue.desc"
+            "Title Asc" -> "original_title.asc"
+            "Title Desc" -> "original_title.desc"
+            "Score Asc" -> "vote_average.asc"
+            "Score Desc" -> "vote_average.desc"
+            "Vote Count Asc" -> "vote_count.asc"
+            "Vote Count Desc" -> "vote_count.desc"
+            else -> Common.STRING_EMPTY
+        }
     }
 }

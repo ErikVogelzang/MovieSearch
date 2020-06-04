@@ -9,6 +9,7 @@ import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
+import java.util.*
 
 class Common {
     companion object {
@@ -28,7 +29,7 @@ class Common {
         const val ADULT_QUERY = "include_adult"
         const val VIDEO_QUERY = "include_video"
         const val PAGE_QUERY = "page"
-        const val YEAR_QUERY = "year"
+        const val GENRES_QUERY = "with_genres"
         const val APPEND_QUERRY = "append_to_response"
         const val STRING_EMPTY = ""
         const val STRING_DOT = "."
