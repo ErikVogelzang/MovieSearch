@@ -1,6 +1,7 @@
 package com.example.moviesearch.ui
 
 
+import android.app.Activity
 import android.content.res.Configuration
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -128,9 +129,9 @@ class MovieSearchFragment : Fragment() {
                 id: Long
             ) {
                 if (position != 0)
-                    setSecondaryCategories(parent?.getItemAtPosition(position).toString(), view!!)
+                    setSecondaryCategories(parent?.getItemAtPosition(position).toString())
                 else
-                    ddCatSecondary.adapter = ArrayAdapter<String>(view!!.context, android.R.layout.simple_spinner_dropdown_item, ArrayList<String>())
+                    ddCatSecondary.adapter = ArrayAdapter<String>(requireActivity().application.applicationContext, android.R.layout.simple_spinner_dropdown_item, ArrayList<String>())
                 onCategoriesChanged()
             }
 
@@ -166,7 +167,7 @@ class MovieSearchFragment : Fragment() {
         }
     }
 
-    private fun setSecondaryCategories(primarySelection: String, view: View) {
+    private fun setSecondaryCategories(primarySelection: String) {
         val secCategories = ArrayList<String>()
         var passedFirst = false
         for (sel in categories) {
@@ -179,7 +180,7 @@ class MovieSearchFragment : Fragment() {
                 }
             }
         }
-        val catAdapterSec = ArrayAdapter<String>(view.context, android.R.layout.simple_spinner_dropdown_item, secCategories)
+        val catAdapterSec = ArrayAdapter<String>(requireActivity().applicationContext, android.R.layout.simple_spinner_dropdown_item, secCategories)
         ddCatSecondary.adapter = catAdapterSec
     }
 
