@@ -21,8 +21,11 @@ import java.util.ArrayList
 
 class MovieRepository {
 
-    val movieList = MutableLiveData<List<MovieItemSearch>>()
-    var movieDetails = MutableLiveData<MovieItemDetails>()
+    private val movieList = MutableLiveData<List<MovieItemSearch>>()
+    private var movieDetails = MutableLiveData<MovieItemDetails>()
+    private var categoryPrimary = MutableLiveData<String>()
+    private var categorySecondary = MutableLiveData<String>()
+    private var sortBy = MutableLiveData<String>()
     private fun removeQuotes(str: String): String {
         return str.replace(Common.STRING_QUOTE, Common.STRING_EMPTY)
     }
@@ -33,6 +36,30 @@ class MovieRepository {
 
     fun getMovieDetails(): LiveData<MovieItemDetails> {
         return movieDetails
+    }
+
+    fun getCategoryPrimary(): LiveData<String> {
+        return categoryPrimary
+    }
+
+    fun setCategoryPrimary(value: String) {
+        categoryPrimary.value = value
+    }
+
+    fun getCategorySecondary(): LiveData<String> {
+        return categorySecondary
+    }
+
+    fun setCategorySecondary(value: String) {
+        categorySecondary.value = value
+    }
+
+    fun getsortBy(): LiveData<String> {
+        return sortBy
+    }
+
+    fun setSortBy(value: String) {
+        sortBy.value = value
     }
 
     private fun setMoviesLoadState() {

@@ -14,6 +14,10 @@ class Common {
     companion object {
         const val PLACEHOLDER_TEXT = "placeholder"
         var lastYear = PLACEHOLDER_TEXT
+        var catSecSelected = 0
+        var catPriSelected = 0
+        var sortBySelected = 0
+        var searchFragmentDestroyed = false
         const val DEFAULT_SPAN_COUNT = 1
         const val BASE_URL_SEARCH = "https://api.themoviedb.org/3/discover/"
         const val BASE_QUERY_SEARCH = "movie?"

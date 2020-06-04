@@ -3,7 +3,9 @@ package com.example.moviesearch.ui
 
 import android.app.Activity
 import android.content.res.Configuration
+import android.opengl.Visibility
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -11,6 +13,8 @@ import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import androidx.core.view.iterator
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
@@ -95,6 +99,7 @@ class MovieSearchFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         initViewModel()
+
     }
 
     private fun initViews() {
@@ -119,7 +124,6 @@ class MovieSearchFragment : Fragment() {
         ddSortBy.adapter = sortAdapter
         ddCatPrimary.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(parent: AdapterView<*>?) {
-                ddCatSecondary.visibility = View.GONE
             }
 
             override fun onItemSelected(
@@ -129,7 +133,7 @@ class MovieSearchFragment : Fragment() {
                 id: Long
             ) {
                 if (position != 0)
-                    setSecondaryCategories(parent?.getItemAtPosition(position).toString())
+                    setSecondaryCategories(parent?.getItemAtPosition(position).toString(), false)
                 else
                     ddCatSecondary.adapter = ArrayAdapter<String>(requireActivity().application.applicationContext, android.R.layout.simple_spinner_dropdown_item, ArrayList<String>())
                 onCategoriesChanged()
@@ -138,7 +142,6 @@ class MovieSearchFragment : Fragment() {
         }
         ddCatSecondary.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(parent: AdapterView<*>?) {
-                ddCatSecondary.visibility = View.GONE
             }
 
             override fun onItemSelected(
@@ -147,6 +150,7 @@ class MovieSearchFragment : Fragment() {
                 position: Int,
                 id: Long
             ) {
+                Common.catSecSelected = ddCatSecondary.selectedItemPosition
                 onCategoriesChanged()
             }
 
@@ -165,9 +169,21 @@ class MovieSearchFragment : Fragment() {
                 onCategoriesChanged()
             }
         }
+        if (Common.searchFragmentDestroyed) {
+            ddCatPrimary.setSelection(Common.catPriSelected)
+            ddSortBy.setSelection(Common.sortBySelected)
+            Common.searchFragmentDestroyed = false
+        }
     }
 
-    private fun setSecondaryCategories(primarySelection: String) {
+    private fun setSecondaryCategories(primarySelection: String, restored: Boolean) {
+        var pos = 0
+        if (ddCatSecondary.selectedItem != null) {
+            if (ddCatSecondary.selectedItem.toString() != primarySelection) {
+                pos = ddCatSecondary.selectedItemPosition
+            }
+        }
+
         val secCategories = ArrayList<String>()
         var passedFirst = false
         for (sel in categories) {
@@ -180,8 +196,17 @@ class MovieSearchFragment : Fragment() {
                 }
             }
         }
+        if (ddCatSecondary.selectedItem != null) {
+            for (sel in 0 until (secCategories.size-1)) {
+                if (secCategories[sel] == ddCatSecondary.selectedItem.toString())
+                    pos = sel
+            }
+        }
+        if (restored)
+            pos = Common.catSecSelected
         val catAdapterSec = ArrayAdapter<String>(requireActivity().applicationContext, android.R.layout.simple_spinner_dropdown_item, secCategories)
         ddCatSecondary.adapter = catAdapterSec
+        ddCatSecondary.setSelection(pos)
     }
 
 
@@ -205,6 +230,7 @@ class MovieSearchFragment : Fragment() {
             "2018",
             getString(R.string.movie_db_api_key)
         )
+        //movieListViewModel.setCatagoryPrimaryLiveData(ddCatPrimary.selectedItem.toString())
     }
 
     private fun onCategoriesChanged() {
@@ -221,5 +247,19 @@ class MovieSearchFragment : Fragment() {
         val spanCount = Math.floor((viewWidth / (moviePosterWidth +
                 moviePosterMargin)).toDouble()).toInt()
         return if (spanCount >= Common.DEFAULT_SPAN_COUNT) spanCount else Common.DEFAULT_SPAN_COUNT
+    }
+
+
+    override fun onViewStateRestored(savedInstanceState: Bundle?) {
+        setSecondaryCategories(ddCatPrimary.selectedItem.toString(), true)
+        super.onViewStateRestored(savedInstanceState)
+    }
+
+    override fun onDestroyView() {
+        Common.catPriSelected = ddCatPrimary.selectedItemPosition
+        Common.catSecSelected = ddCatSecondary.selectedItemPosition
+        Common.sortBySelected = ddSortBy.selectedItemPosition
+        Common.searchFragmentDestroyed = true
+        super.onDestroyView()
     }
 }
