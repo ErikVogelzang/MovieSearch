@@ -1,6 +1,8 @@
 package com.example.moviesearch.common
 import android.content.Context
 import android.graphics.drawable.Drawable
+import android.media.Image
+import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import android.widget.ProgressBar
@@ -45,6 +47,15 @@ class Common {
         const val JSON_ID = "id"
 
 
+        fun checkForValidJSonReturn(value: String) : Boolean {
+            return when(value){
+                STRING_EMPTY -> false
+                "0" -> false
+                "null" -> false
+                else -> true
+            }
+        }
+
         fun fetchImageGlide(
             context: Context,
             imageView: ImageView,
@@ -60,6 +71,7 @@ class Common {
                         target: Target<Drawable>?,
                         isFirstResource: Boolean
                     ): Boolean {
+                        progressBar.visibility = View.GONE
                         return false
                     }
 

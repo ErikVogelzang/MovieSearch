@@ -217,7 +217,7 @@ class MovieSearchFragment : Fragment() {
     private fun onMovieClick(movieItem: MovieItemSearch) {
         if (movieItem.loading)
             return
-        val action = MovieSearchFragmentDirections.actionMovieSearchFragmentToDetailsFragment(movieItem.movieID.toInt())
+        val action = MovieSearchFragmentDirections.actionMovieSearchFragmentToDetailsFragment(movieItem.movieID.toInt(), movieItem.posterPath)
         findNavController().navigate(action)
     }
 

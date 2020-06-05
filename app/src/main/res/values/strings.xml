@@ -2,4 +2,14 @@
     <string name="app_name">Search</string>
     <string name="search_frag_title">Search</string>
     <string name="saved_frag_title">Saved</string>
+    <string name="release">Release:</string>
+    <string name="budget">Budget:</string>
+    <string name="language">Language:</string>
+    <string name="revenue">Revenue:</string>
+    <string name="length">Runtime:</string>
+    <string name="rating">Rating:</string>
+    <string name="genres">Genres:</string>
+    <string name="cast">Cast:</string>
+    <string name="plot">Plot</string>
+    <string name="embed_url">Plot</string>
 </resources>

@@ -1,6 +1,7 @@
 package com.example.moviesearch.ui
 
 import android.content.Context
+import android.opengl.Visibility
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.moviesearch.R
 import com.example.moviesearch.common.Common
 import com.example.moviesearch.model.MovieItemSearch
+import kotlinx.android.synthetic.main.fragment_details.view.*
 import kotlinx.android.synthetic.main.item_movie.view.*
 
 class MovieAdapter(val movieList: List<MovieItemSearch>, private val onClick: (MovieItemSearch) -> Unit) :
@@ -26,7 +28,15 @@ class MovieAdapter(val movieList: List<MovieItemSearch>, private val onClick: (M
     override fun getItemCount(): Int = movieList.size
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(movieList[position], position)
+        holder.bind(movieList[position])
+    }
+
+    override fun getItemId(position: Int): Long {
+        return position.toLong()
+    }
+
+    override fun getItemViewType(position: Int): Int {
+        return position
     }
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -34,13 +44,20 @@ class MovieAdapter(val movieList: List<MovieItemSearch>, private val onClick: (M
             itemView.setOnClickListener { onClick(movieList[adapterPosition]) }
         }
 
-        fun bind(movieItem: MovieItemSearch, pos: Int) {
+        fun bind(movieItem: MovieItemSearch) {
             if (!movieItem.loading) {
-                Common.fetchImageGlide(context, itemView.ivMovie, itemView.pbLoading,
-                    movieItem.posterPath)
+                if (Common.checkForValidJSonReturn(movieItem.posterPath) && !movieItem.hasBeenFetched) {
+                    Common.fetchImageGlide(
+                        context, itemView.ivMovie, itemView.pbLoading,
+                        movieItem.posterPath
+                    )
+                    movieItem.hasBeenFetched = true
+                }
+                else {
+                    itemView.pbLoading.visibility = View.GONE
+                }
             }
             else {
-                itemView.ivMovie.visibility = View.GONE
                 itemView.pbLoading.visibility = View.VISIBLE
             }
 

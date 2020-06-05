@@ -22,4 +22,8 @@ class MovieViewModel  : ViewModel() {
     fun getMovieDetailsLiveData(): LiveData<MovieItemDetails> {
         return movieRepository.getMovieDetails()
     }
+
+    fun clearMovieDetails() {
+        movieRepository.clearMovieDetails()
+    }
 }

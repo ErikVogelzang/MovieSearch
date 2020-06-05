@@ -1,7 +1,6 @@
 package com.example.moviesearch.model
 
 data class MovieItemDetails (
-    val posterPath: String,
     val backdropPath: String,
     val budget: String,
     val genres: String,

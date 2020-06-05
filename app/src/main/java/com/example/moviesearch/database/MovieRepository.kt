@@ -66,7 +66,7 @@ class MovieRepository {
                 }
                 var results = response.body()?.getResults()
                 for (i in 0 until results?.size()!!) {
-                    var result = results?.get(i)?.asJsonObject
+                    var result = results.get(i)?.asJsonObject
                     val posterPath = removeQuotes(result?.get(Common.JSON_POSTER).toString())
                     val movieID = removeQuotes(result?.get(Common.JSON_ID).toString())
 
@@ -75,6 +75,16 @@ class MovieRepository {
                 movieList.value = moviesFound
             }
         })
+    }
+
+
+    fun clearMovieDetails() {
+        movieDetails.value = MovieItemDetails(
+            Common.STRING_EMPTY,Common.STRING_EMPTY,Common.STRING_EMPTY,Common.STRING_EMPTY,
+            Common.STRING_EMPTY,Common.STRING_EMPTY,Common.STRING_EMPTY,Common.STRING_EMPTY,
+            Common.STRING_EMPTY,Common.STRING_EMPTY,Common.STRING_EMPTY,Common.STRING_EMPTY,
+            Common.STRING_EMPTY,false
+        )
     }
 
     fun setMovieDetails(id: String, apiKey: String) {
@@ -86,7 +96,6 @@ class MovieRepository {
         val jsonCall = movieApi.getMovieDetails(id, apiKey, Common.EXTRA_APPEND_VAL)
         jsonCall.enqueue(object: Callback<MovieDetails>{
             override fun onFailure(call: Call<MovieDetails>, t: Throwable) {
-                Log.i("RESPONSE", t.message)
             }
 
             override fun onResponse(call: Call<MovieDetails>, response: Response<MovieDetails>) {
@@ -94,7 +103,6 @@ class MovieRepository {
                     return
                 }
                 var results = response.body()
-                val posterPath = removeQuotes(results?.getPosterPath())
                 val backdropPath = removeQuotes(results?.getBackdropPath())
                 val budget = removeQuotes(results?.getBudget())
                 val imdbID = removeQuotes(results?.getIMDBID())
@@ -105,15 +113,18 @@ class MovieRepository {
                 val revenue = removeQuotes(results?.getRevenue())
                 val length = removeQuotes(results?.getRuntime())
                 val rating = removeQuotes(results?.getRating())
-                val trailerPath = findYoutubeTrailerKey(results!!.getTrailers())
-                val genres = getGenresFromArray(results!!.getGenres())
-                val cast = getCastFromArray(results!!.getCast())
-                movieDetails.value = MovieItemDetails(posterPath, backdropPath, budget, genres, imdbID, language, title, overview, release, revenue, length, rating, trailerPath, cast, false)
+                val trailerPath = findYoutubeTrailerKey(results?.getTrailers())
+                val genres = getGenresFromArray(results?.getGenres())
+                val cast = getCastFromArray(results?.getCast())
+                movieDetails.value = MovieItemDetails(backdropPath, budget, genres, imdbID, language, title, overview, release, revenue, length, rating, trailerPath, cast, false)
             }
         })
     }
 
-    private fun findYoutubeTrailerKey(list: JsonArray): String {
+    private fun findYoutubeTrailerKey(list: JsonArray?): String {
+        if (list == null)
+            return Common.STRING_EMPTY
+
         for (i in 0 until list.size()) {
             if (
                 removeQuotes(list.get(i).asJsonObject.get("site").asString) == "YouTube"
@@ -121,11 +132,13 @@ class MovieRepository {
             )
                 return removeQuotes(list.get(i).asJsonObject.get("key").asString)
         }
-        return ""
+        return Common.STRING_EMPTY
     }
 
-    private fun getGenresFromArray(list: JsonArray): String {
-        var genreList = ""
+    private fun getGenresFromArray(list: JsonArray?): String {
+        if (list == null)
+            return Common.STRING_EMPTY
+        var genreList = Common.STRING_EMPTY
         for (i in 0 until list.size()) {
             if (i > 0)
                 genreList = genreList.plus(", ")
@@ -134,8 +147,10 @@ class MovieRepository {
         return genreList
     }
 
-    private fun getCastFromArray(list: JsonArray): String {
-        var castList = ""
+    private fun getCastFromArray(list: JsonArray?): String {
+        if (list == null)
+            return Common.STRING_EMPTY
+        var castList = Common.STRING_EMPTY
         for (i in 0 until list.size()) {
             if (i > 0)
                 castList = castList.plus(", ")
