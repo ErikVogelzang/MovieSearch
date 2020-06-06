@@ -1,11 +1,7 @@
 package com.example.moviesearch.ui
 
 
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
-import android.opengl.Visibility
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -19,7 +15,6 @@ import com.example.moviesearch.R
 import com.example.moviesearch.common.Common
 import com.example.moviesearch.model.MovieItemDetails
 import com.example.moviesearch.model.MovieViewModel
-import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_details.*
 
 /**

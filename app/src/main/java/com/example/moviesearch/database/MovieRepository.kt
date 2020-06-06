@@ -1,5 +1,6 @@
 package com.example.moviesearch.database
 
+import android.content.Context
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -9,6 +10,7 @@ import com.example.moviesearch.api.MovieList
 import com.example.moviesearch.common.Common
 import com.example.moviesearch.model.MovieItemDetails
 import com.example.moviesearch.model.MovieItemSearch
+import com.example.moviesearch.model.MovieSaved
 import com.google.gson.JsonArray
 import retrofit2.Call
 import retrofit2.Callback
@@ -19,10 +21,19 @@ import java.util.ArrayList
 
 
 
-class MovieRepository {
+class MovieRepository(context: Context) {
 
     private val movieList = MutableLiveData<List<MovieItemSearch>>()
+    private val movieSavedList: LiveData<List<MovieSaved>>
     private var movieDetails = MutableLiveData<MovieItemDetails>()
+    private val movieDao: MovieDao
+
+    init {
+        val database = MovieRoomDatabase.getDatabase(context)
+        movieDao = database!!.movieDao()
+        movieSavedList = movieDao.getAllMovies()
+    }
+
     private fun removeQuotes(str: String?): String {
         if (str == null)
             return Common.STRING_EMPTY
@@ -40,12 +51,12 @@ class MovieRepository {
     private fun setMoviesLoadState() {
         val moviesLoadState = ArrayList<MovieItemSearch>()
         for (i in Common.MOVIE_START_COUNTER..Common.DEFAULT_PAGE_MOVIES) {
-            moviesLoadState.add(MovieItemSearch(i.toString(), i.toString(), true))
+            moviesLoadState.add(MovieItemSearch(Common.STRING_EMPTY, Common.STRING_EMPTY, Common.STRING_EMPTY, true))
         }
         movieList.value = moviesLoadState
     }
 
-    fun setMovieList(genres: String, sortBy: String, apiKey: String) {
+    fun setMovieList(genres: String, sortBy: String, apiKey: String, yearGte: String, yearLte: String) {
         setMoviesLoadState()
 
         val moviesFound = ArrayList<MovieItemSearch>()
@@ -55,7 +66,7 @@ class MovieRepository {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         val movieApi = retrofit.create(MovieApi::class.java)
-        val jsonCall = movieApi.getMovies(apiKey, Common.DEFAULT_LANG, sortBy, false, false, Common.DEFAULT_PAGE, genres)
+        val jsonCall = movieApi.getMovies(apiKey, Common.DEFAULT_LANG, sortBy, false, false, Common.DEFAULT_PAGE, genres, yearGte, yearLte)
         jsonCall.enqueue(object: Callback<MovieList>{
             override fun onFailure(call: Call<MovieList>, t: Throwable) {
             }
@@ -69,8 +80,8 @@ class MovieRepository {
                     var result = results.get(i)?.asJsonObject
                     val posterPath = removeQuotes(result?.get(Common.JSON_POSTER).toString())
                     val movieID = removeQuotes(result?.get(Common.JSON_ID).toString())
-
-                    moviesFound.add(MovieItemSearch(posterPath, movieID, false))
+                    val title = removeQuotes(result?.get(Common.JSON_TITLE).toString())
+                    moviesFound.add(MovieItemSearch(posterPath, movieID, title, false))
                 }
                 movieList.value = moviesFound
             }
@@ -158,4 +169,12 @@ class MovieRepository {
         }
         return castList
     }
+
+    fun getAllSavedMovies(): LiveData<List<MovieSaved>> = movieSavedList
+
+    suspend fun saveMovie(movie: MovieSaved) = movieDao.insertMovie(movie)
+
+    suspend fun deleteAllSavedMovies() = movieDao.deleteAllMovies()
+
+    suspend fun deleteSavedMovie(movie: MovieSaved) = movieDao.deleteMovie(movie)
 }

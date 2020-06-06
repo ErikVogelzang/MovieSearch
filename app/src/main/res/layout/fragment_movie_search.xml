@@ -34,30 +34,114 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <Spinner
-        android:id="@+id/ddSortBy"
+        android:id="@+id/ddSortByMain"
         android:layout_width="166dp"
         android:layout_height="45dp"
-        android:layout_marginStart="125dp"
-        android:layout_marginTop="100dp"
-        android:layout_marginEnd="125dp"
+        android:layout_marginStart="19dp"
+        android:layout_marginTop="105dp"
+        android:background="@drawable/custom_spinner"
+        android:dropDownWidth="wrap_content"
+        android:popupBackground="@color/colorGrey"
+        android:spinnerMode="dropdown"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Spinner
+        android:id="@+id/ddSortByDirection"
+        android:layout_width="166dp"
+        android:layout_height="45dp"
+        android:layout_marginTop="104dp"
+        android:layout_marginEnd="19dp"
         android:background="@drawable/custom_spinner"
         android:dropDownWidth="wrap_content"
         android:popupBackground="@color/colorGrey"
         android:spinnerMode="dropdown"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Spinner
+        android:id="@+id/ddSortByYear"
+        android:layout_width="83dp"
+        android:layout_height="45dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="160dp"
+        android:background="@drawable/custom_spinner_small"
+        android:dropDownWidth="wrap_content"
+        android:popupBackground="@color/colorGrey"
+        android:spinnerMode="dropdown"
+        app:layout_constraintStart_toEndOf="@id/tvFilterYear"
         app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvMovies"
-        android:layout_width="391dp"
-        android:layout_height="561dp"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:layout_marginTop="18dp"
-        android:background="@color/colorGrey"
-        android:padding="15dp"
+        android:background="@color/cardview_dark_background"
+        android:clipToPadding="false"
+        android:padding="5dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ddSortBy" />
+        app:layout_constraintTop_toBottomOf="@id/ddSortByYear" />
+
+    <TextView
+        android:id="@+id/tvFilterYear"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="19dp"
+        android:layout_marginTop="20dp"
+        android:text="@string/sort_year_text"
+        android:textColor="@color/colorGrey"
+        android:textSize="18sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/ddSortByMain" />
+
+    <EditText
+        android:theme="@style/BlackBGTextView"
+        android:id="@+id/etYear1"
+        android:layout_width="70dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="160dp"
+        android:backgroundTint="@color/colorGrey"
+        android:ems="10"
+        android:hint="Year"
+        android:inputType="numberSigned"
+        android:longClickable="false"
+        android:maxLength="4"
+        android:textColor="@color/colorGrey"
+        android:textColorHighlight="@color/colorGrey"
+        android:textColorHint="@color/colorGrey"
+        android:textColorLink="@color/colorGrey"
+        android:textCursorDrawable="@null"
+        android:textIsSelectable="true"
+        android:textSize="18sp"
+        app:layout_constraintStart_toEndOf="@+id/ddSortByYear"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <EditText
+        android:id="@+id/etYear2"
+        android:layout_width="70dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="160dp"
+        android:backgroundTint="@color/colorGrey"
+        android:ems="10"
+        android:hint="Year2"
+        android:inputType="numberSigned"
+        android:longClickable="false"
+        android:maxLength="4"
+        android:textColor="@color/colorGrey"
+        android:textColorHighlight="@color/colorGrey"
+        android:textColorHint="@color/colorGrey"
+        android:textColorLink="@color/colorGrey"
+        android:textCursorDrawable="@null"
+        android:textIsSelectable="true"
+        android:textSize="18sp"
+        android:theme="@style/BlackBGTextView"
+        android:visibility="gone"
+        app:layout_constraintStart_toEndOf="@id/etYear1"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

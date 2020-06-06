@@ -1,8 +1,17 @@
 package com.example.moviesearch.model
 
+import android.os.Parcelable
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+import kotlinx.android.parcel.Parcelize
 
-
-data class MovieItemDetails (
+@Parcelize
+@Entity(tableName = "movieTable")
+data class MovieSaved (
+    @PrimaryKey
+    val movieID: String,
+    val posterPath: String,
     val backdropPath: String,
     val budget: String,
     val genres: String,
@@ -15,6 +24,5 @@ data class MovieItemDetails (
     val length: String,
     val rating: String,
     val trailer: String,
-    val cast: String,
-    var loading: Boolean
-)
+    val cast: String
+) : Parcelable

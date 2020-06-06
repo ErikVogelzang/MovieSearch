@@ -9,7 +9,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.moviesearch.R
 import com.example.moviesearch.common.Common
 import com.example.moviesearch.model.MovieItemSearch
-import kotlinx.android.synthetic.main.fragment_details.view.*
 import kotlinx.android.synthetic.main.item_movie.view.*
 
 class MovieAdapter(val movieList: List<MovieItemSearch>, private val onClick: (MovieItemSearch) -> Unit) :
@@ -52,9 +51,11 @@ class MovieAdapter(val movieList: List<MovieItemSearch>, private val onClick: (M
                         movieItem.posterPath
                     )
                     movieItem.hasBeenFetched = true
+                    itemView.tvFallbackTitle.visibility = View.GONE
                 }
                 else {
                     itemView.pbLoading.visibility = View.GONE
+                    itemView.tvFallbackTitle.text = movieItem.title
                 }
             }
             else {

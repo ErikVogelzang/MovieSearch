@@ -5,7 +5,6 @@ import com.google.gson.JsonObject
 
 class MovieDetails (
     private var backdrop_path: String,
-    private var poster_path: String,
     private var budget: String,
     private var genres: JsonArray,
     private var imdb_id: String,
@@ -20,7 +19,6 @@ class MovieDetails (
     private var credits: JsonObject
 ) {
     fun getBackdropPath(): String = backdrop_path
-    fun getPosterPath(): String = poster_path
     fun getBudget(): String = budget
     fun getGenres(): JsonArray = genres
     fun getIMDBID(): String = imdb_id

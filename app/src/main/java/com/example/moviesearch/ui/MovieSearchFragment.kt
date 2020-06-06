@@ -1,22 +1,17 @@
 package com.example.moviesearch.ui
 
 
-import android.app.Activity
-import android.content.res.Configuration
-import android.opengl.Visibility
 import android.os.Bundle
 import android.util.Log
+import android.view.*
+import android.view.inputmethod.EditorInfo
 import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.view.ViewTreeObserver
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import androidx.core.view.iterator
-import androidx.lifecycle.LifecycleOwner
+import android.widget.EditText
+import android.widget.TextView
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -25,7 +20,7 @@ import com.example.moviesearch.common.Common
 import com.example.moviesearch.model.MovieItemSearch
 import com.example.moviesearch.model.MovieViewModel
 import kotlinx.android.synthetic.main.fragment_movie_search.*
-import java.util.*
+import java.time.Year
 import kotlin.collections.ArrayList
 
 /**
@@ -64,18 +59,24 @@ class MovieSearchFragment : Fragment() {
 
     private val sortOptions = arrayOf (
         "Select how to sort",
-        "Popularity Asc",
-        "Popularity Desc",
-        "Release Asc",
-        "Release Desc",
-        "Revenue Asc",
-        "Revenue Desc",
-        "Title Asc",
-        "Title Desc",
-        "Score Asc",
-        "Score Desc",
-        "Vote Count Asc",
-        "Vote Count Desc"
+        "Popularity",
+        "Release",
+        "Revenue",
+        "Title",
+        "Score",
+        "Vote Count"
+    )
+
+    private val sortDirections = arrayOf (
+        "Descending",
+        "Ascending"
+    )
+
+    private val sortByYearOptions = arrayOf (
+        ">=",
+        "<=",
+        "=",
+        ">= <="
     )
 
     override fun onCreateView(
@@ -92,18 +93,17 @@ class MovieSearchFragment : Fragment() {
     }
 
     private fun initViewModel() {
-        movieListViewModel = ViewModelProviders.of(requireActivity()).get(MovieViewModel::class.java)
+        movieListViewModel = ViewModelProvider(requireActivity()).get(MovieViewModel::class.java)
         movieListViewModel.getMovieListLiveData().observe(this.viewLifecycleOwner, Observer {
-            assignAdapter()
             movieList.clear()
             movieList.addAll(it)
+            assignMovieAdapter()
         })
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         initViewModel()
-
     }
 
     private fun initViews() {
@@ -120,63 +120,40 @@ class MovieSearchFragment : Fragment() {
                 gridLayoutManager.requestLayout()
             }
         })
-        assignAdapter()
-
-        val catAdapterPri = ArrayAdapter<String>(requireContext(), android.R.layout.simple_spinner_dropdown_item, categories)
-        ddCatPrimary.adapter = catAdapterPri
-        val sortAdapter = ArrayAdapter<String>(requireContext(), android.R.layout.simple_spinner_dropdown_item, sortOptions)
-        ddSortBy.adapter = sortAdapter
-        ddCatPrimary.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-            }
-
-            override fun onItemSelected(
-                parent: AdapterView<*>?,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                if (position != 0)
-                    setSecondaryCategories(parent?.getItemAtPosition(position).toString(), false)
-                else
-                    ddCatSecondary.adapter = ArrayAdapter<String>(requireActivity().application.applicationContext, android.R.layout.simple_spinner_dropdown_item, ArrayList<String>())
-                onCategoriesChanged()
-            }
-
-        }
-        ddCatSecondary.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-            }
-
-            override fun onItemSelected(
-                parent: AdapterView<*>?,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                Common.catSecSelected = ddCatSecondary.selectedItemPosition
-                onCategoriesChanged()
-            }
-
-        }
-        ddSortBy.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-                ddCatSecondary.visibility = View.GONE
-            }
-
-            override fun onItemSelected(
-                parent: AdapterView<*>?,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                onCategoriesChanged()
-            }
-        }
+        assignMovieAdapter()
+        etYear1.onFocusChangeListener = setEditTextListener()
+        etYear2.onFocusChangeListener = setEditTextListener()
+        ddCatPrimary.adapter = setSpinnerAdapter(categories.toList())
+        ddSortByMain.adapter = setSpinnerAdapter(sortOptions.toList())
+        ddSortByDirection.adapter = setSpinnerAdapter(sortDirections.toList())
+        ddSortByYear.adapter = setSpinnerAdapter(sortByYearOptions.toList())
+        ddCatPrimary.onItemSelectedListener = initSpinner(this::onPrimaryCatItemSelect)
+        ddCatSecondary.onItemSelectedListener = initSpinner()
+        ddSortByMain.onItemSelectedListener = initSpinner()
+        ddSortByDirection.onItemSelectedListener = initSpinner()
+        ddSortByYear.onItemSelectedListener = initSpinner(this::onSortByYearItemSelect)
         if (Common.searchFragmentDestroyed) {
             ddCatPrimary.setSelection(Common.catPriSelected)
-            ddSortBy.setSelection(Common.sortBySelected)
+            ddSortByMain.setSelection(Common.sortBySelected)
             Common.searchFragmentDestroyed = false
+        }
+    }
+
+    private fun initSpinner(onSelect: ((pos: Int) -> Unit)? = null): AdapterView.OnItemSelectedListener {
+        return object : AdapterView.OnItemSelectedListener {
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+            }
+
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                if (onSelect != null)
+                    onSelect(position)
+                onCategoriesChanged()
+            }
         }
     }
 
@@ -208,11 +185,9 @@ class MovieSearchFragment : Fragment() {
         }
         if (restored)
             pos = Common.catSecSelected
-        val catAdapterSec = ArrayAdapter<String>(requireActivity().applicationContext, android.R.layout.simple_spinner_dropdown_item, secCategories)
-        ddCatSecondary.adapter = catAdapterSec
+        ddCatSecondary.adapter = setSpinnerAdapter(secCategories)
         ddCatSecondary.setSelection(pos)
     }
-
 
     private fun onMovieClick(movieItem: MovieItemSearch) {
         if (movieItem.loading)
@@ -221,17 +196,10 @@ class MovieSearchFragment : Fragment() {
         findNavController().navigate(action)
     }
 
-    fun assignAdapter() {
-        movieAdapter = MovieAdapter(
-            movieList,
-            { movieItem -> onMovieClick(movieItem) })
-        rvMovies.adapter = movieAdapter
-    }
-
     private fun onCategoriesChanged() {
-        if (ddCatPrimary.selectedItemPosition == 0 || ddSortBy.selectedItemPosition == 0)
+        if (ddCatPrimary.selectedItemPosition == 0 || ddSortByMain.selectedItemPosition == 0)
             return
-        movieListViewModel.getMoviesSearch(getGenreQuery(), getsortByQuery(), getString(R.string.movie_db_api_key))
+        movieListViewModel.getMoviesSearch(getGenreQuery(), getsortByQuery(), getString(R.string.movie_db_api_key), getYearGteQuery(), getYearLteQuery())
     }
 
     private fun calculateSpanCount(): Int{
@@ -243,7 +211,6 @@ class MovieSearchFragment : Fragment() {
         return if (spanCount >= Common.DEFAULT_SPAN_COUNT) spanCount else Common.DEFAULT_SPAN_COUNT
     }
 
-
     override fun onViewStateRestored(savedInstanceState: Bundle?) {
         setSecondaryCategories(ddCatPrimary.selectedItem.toString(), true)
         super.onViewStateRestored(savedInstanceState)
@@ -252,7 +219,7 @@ class MovieSearchFragment : Fragment() {
     override fun onDestroyView() {
         Common.catPriSelected = ddCatPrimary.selectedItemPosition
         Common.catSecSelected = ddCatSecondary.selectedItemPosition
-        Common.sortBySelected = ddSortBy.selectedItemPosition
+        Common.sortBySelected = ddSortByMain.selectedItemPosition
         Common.searchFragmentDestroyed = true
         super.onDestroyView()
     }
@@ -282,6 +249,14 @@ class MovieSearchFragment : Fragment() {
         }
     }
 
+    private fun setSpinnerAdapter(list: List<String>): ArrayAdapter<String> {
+        return ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_spinner_dropdown_item,
+            list
+        )
+    }
+
     private fun getGenreQuery() : String {
         val primary = getGenreID(ddCatPrimary.selectedItem.toString())
         val secondary = getGenreID(ddCatSecondary.selectedItem.toString())
@@ -294,20 +269,80 @@ class MovieSearchFragment : Fragment() {
     }
 
     private fun getsortByQuery() : String {
-        return when (ddSortBy.selectedItem.toString()) {
-            "Popularity Asc" -> "popularity.asc"
-            "Popularity Desc" -> "popularity.desc"
-            "Release Asc" -> "release_date.asc"
-            "Release Desc" -> "release_date.desc"
-            "Revenue Asc" -> "revenue.asc"
-            "Revenue Desc" -> "revenue.desc"
-            "Title Asc" -> "original_title.asc"
-            "Title Desc" -> "original_title.desc"
-            "Score Asc" -> "vote_average.asc"
-            "Score Desc" -> "vote_average.desc"
-            "Vote Count Asc" -> "vote_count.asc"
-            "Vote Count Desc" -> "vote_count.desc"
-            else -> Common.STRING_EMPTY
+        var str = ddSortByMain.selectedItem.toString()
+        when (str) {
+            "Release" -> str = "primary_release_date"
+            "Title" -> str = "original_title"
+            "Score" -> str = "vote_average"
+            "Vote Count" -> str = "vote_count"
+            else -> str = str.toLowerCase()
+        }
+        when (ddSortByDirection.selectedItem.toString()) {
+            "Ascending" -> str = str.plus(".asc")
+            "Descending" -> str = str.plus(".desc")
+        }
+        return str
+    }
+
+    private fun onPrimaryCatItemSelect(pos: Int) {
+        if (pos != 0)
+            setSecondaryCategories(ddCatPrimary.getItemAtPosition(pos).toString(), false)
+        else
+            ddCatSecondary.adapter = setSpinnerAdapter(listOf())
+    }
+
+    private fun onSortByYearItemSelect(pos: Int) {
+        if (ddSortByYear.selectedItem.toString() == ">= <=")
+            etYear2.visibility = View.VISIBLE
+        else
+            etYear2.visibility = View.GONE
+    }
+
+    private fun assignMovieAdapter() {
+        movieAdapter = MovieAdapter(
+            movieList,
+            { movieItem -> onMovieClick(movieItem) })
+        rvMovies.adapter = movieAdapter
+    }
+
+    private fun getYearGteQuery(): String {
+        if (ddSortByYear.selectedItem.toString() != "<=")
+            return getYearFormatted(etYear1.text.toString(), true)
+        else
+            return Common.STRING_EMPTY
+    }
+
+    private fun getYearLteQuery(): String {
+        val filter = ddSortByYear.selectedItem.toString()
+        if (filter == "<=" || filter == "=") {
+            return getYearFormatted(etYear1.text.toString(), false)
+        }
+        else if (filter == ">= <=") {
+            return getYearFormatted(etYear2.text.toString(), false)
+        }
+        else
+            return Common.STRING_EMPTY
+    }
+
+    private fun getYearFormatted(year: String, isHigherThan: Boolean) : String {
+        var newYear = year
+        if (year.length != 4)
+            newYear = "1895"
+        if (year == Common.STRING_EMPTY)
+            return Common.STRING_EMPTY
+        if (isHigherThan)
+            return newYear + Common.YEAR_START
+        else
+            return newYear + Common.YEAR_END
+    }
+
+    private fun setEditTextListener(): View.OnFocusChangeListener {
+        return object : View.OnFocusChangeListener {
+            override fun onFocusChange(v: View?, hasFocus: Boolean) {
+                if (!hasFocus)
+                    onCategoriesChanged()
+            }
+
         }
     }
 }

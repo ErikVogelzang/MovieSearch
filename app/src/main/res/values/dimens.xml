@@ -1,5 +1,5 @@
 <resources>
     <dimen name="fab_margin">16dp</dimen>
-    <dimen name="poster_width">160dp</dimen>
+    <dimen name="poster_width">190dp</dimen>
     <dimen name="margin_medium">5dp</dimen>
 </resources>

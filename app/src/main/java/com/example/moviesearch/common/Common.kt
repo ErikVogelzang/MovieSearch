@@ -31,6 +31,8 @@ class Common {
         const val ADULT_QUERY = "include_adult"
         const val VIDEO_QUERY = "include_video"
         const val PAGE_QUERY = "page"
+        const val YEAR_GTE_QUERY = "primary_release_date.gte"
+        const val YEAR_LTE_QUERY = "primary_release_date.lte"
         const val GENRES_QUERY = "with_genres"
         const val APPEND_QUERRY = "append_to_response"
         const val STRING_EMPTY = ""
@@ -45,6 +47,10 @@ class Common {
         const val MOVIE_START_COUNTER = 1
         const val JSON_POSTER = "poster_path"
         const val JSON_ID = "id"
+        const val JSON_TITLE = "title"
+        const val YEAR_END = "-12-31"
+        const val YEAR_START = "-01-01"
+
 
 
         fun checkForValidJSonReturn(value: String) : Boolean {
@@ -52,6 +58,7 @@ class Common {
                 STRING_EMPTY -> false
                 "0" -> false
                 "null" -> false
+                "0.0" -> false
                 else -> true
             }
         }
