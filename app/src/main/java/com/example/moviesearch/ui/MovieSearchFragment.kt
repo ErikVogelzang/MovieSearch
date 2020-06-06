@@ -73,10 +73,13 @@ class MovieSearchFragment : Fragment() {
     )
 
     private val sortByYearOptions = arrayOf (
-        ">=",
-        "<=",
-        "=",
-        ">= <="
+        Common.STRING_GTE,
+        Common.STRING_GT,
+        Common.STRING_LTE,
+        Common.STRING_LT,
+        Common.STRING_EQUAL,
+        Common.STRING_GTLT,
+        Common.STRING_GTELTE
     )
 
     override fun onCreateView(
@@ -292,7 +295,8 @@ class MovieSearchFragment : Fragment() {
     }
 
     private fun onSortByYearItemSelect(pos: Int) {
-        if (ddSortByYear.selectedItem.toString() == ">= <=")
+        val item = ddSortByYear.selectedItem.toString()
+        if (item == Common.STRING_GTELTE || item == Common.STRING_GTLT)
             etYear2.visibility = View.VISIBLE
         else
             etYear2.visibility = View.GONE
@@ -306,22 +310,30 @@ class MovieSearchFragment : Fragment() {
     }
 
     private fun getYearGteQuery(): String {
-        if (ddSortByYear.selectedItem.toString() != "<=")
-            return getYearFormatted(etYear1.text.toString(), true)
-        else
-            return Common.STRING_EMPTY
+        val filter = ddSortByYear.selectedItem.toString()
+        val year = etYear1.text.toString()
+        if (filter != Common.STRING_LTE && filter != Common.STRING_LT) {
+            if (filter == Common.STRING_GT || filter == Common.STRING_GTLT)
+                return getYearFormatted(setNextOrPreviousYear(year, true), true)
+            return getYearFormatted(year, true)
+        }
+        return Common.STRING_EMPTY
     }
 
     private fun getYearLteQuery(): String {
         val filter = ddSortByYear.selectedItem.toString()
-        if (filter == "<=" || filter == "=") {
-            return getYearFormatted(etYear1.text.toString(), false)
+        val year1 = etYear1.text.toString()
+
+        if (filter == Common.STRING_LTE || filter == Common.STRING_EQUAL)
+            return getYearFormatted(year1, false)
+
+        val year2 = etYear2.text.toString()
+        return when(filter) {
+            Common.STRING_GTLT -> getYearFormatted(setNextOrPreviousYear(year2, false), false)
+            Common.STRING_LT -> getYearFormatted(setNextOrPreviousYear(year1, false), false)
+            Common.STRING_GTELTE -> getYearFormatted(year2, false)
+            else -> Common.STRING_EMPTY
         }
-        else if (filter == ">= <=") {
-            return getYearFormatted(etYear2.text.toString(), false)
-        }
-        else
-            return Common.STRING_EMPTY
     }
 
     private fun getYearFormatted(year: String, isHigherThan: Boolean) : String {
@@ -343,6 +355,16 @@ class MovieSearchFragment : Fragment() {
                     onCategoriesChanged()
             }
 
+        }
+    }
+
+    private fun setNextOrPreviousYear(year: String, increase: Boolean) : String {
+        val newYear = year.toIntOrNull()
+        if (newYear == null)
+            return Common.STRING_EMPTY
+        return when(increase) {
+            true -> (newYear+1).toString()
+            else -> (newYear-1).toString()
         }
     }
 }
