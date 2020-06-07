@@ -80,7 +80,7 @@
         android:background="@color/cardview_dark_background"
         android:clipToPadding="false"
         android:padding="5dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/btnPrev"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/ddSortByYear" />
@@ -98,7 +98,6 @@
         app:layout_constraintTop_toBottomOf="@id/ddSortByMain" />
 
     <EditText
-        android:theme="@style/BlackBGTextView"
         android:id="@+id/etYear1"
         android:layout_width="70dp"
         android:layout_height="wrap_content"
@@ -107,6 +106,7 @@
         android:backgroundTint="@color/colorGrey"
         android:ems="10"
         android:hint="Year"
+        android:imeOptions="actionDone"
         android:inputType="numberSigned"
         android:longClickable="false"
         android:maxLength="4"
@@ -117,6 +117,7 @@
         android:textCursorDrawable="@null"
         android:textIsSelectable="true"
         android:textSize="18sp"
+        android:theme="@style/BlackBGTextView"
         app:layout_constraintStart_toEndOf="@+id/ddSortByYear"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -129,6 +130,7 @@
         android:backgroundTint="@color/colorGrey"
         android:ems="10"
         android:hint="Year2"
+        android:imeOptions="actionDone"
         android:inputType="numberSigned"
         android:longClickable="false"
         android:maxLength="4"
@@ -143,5 +145,49 @@
         android:visibility="gone"
         app:layout_constraintStart_toEndOf="@id/etYear1"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/btnPrev"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="80dp"
+        android:text="@string/prev_btn_text"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/btnNext"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="80dp"
+        android:text="@string/next_btn_text"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <EditText
+        android:id="@+id/etPage"
+        android:layout_width="70dp"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@color/colorGrey"
+        android:ems="10"
+        android:imeOptions="actionDone"
+        android:inputType="numberSigned"
+        android:longClickable="false"
+        android:maxLength="3"
+        android:textAlignment="center"
+        android:textColor="@color/colorGrey"
+        android:textColorHighlight="@color/colorGrey"
+        android:textColorHint="@color/colorGrey"
+        android:textColorLink="@color/colorGrey"
+        android:textCursorDrawable="@null"
+        android:textIsSelectable="true"
+        android:textSize="18sp"
+        android:theme="@style/BlackBGTextView"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

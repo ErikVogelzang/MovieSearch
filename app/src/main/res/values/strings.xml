@@ -12,4 +12,6 @@
     <string name="cast">Cast:</string>
     <string name="plot">Plot</string>
     <string name="sort_year_text">Filter Year</string>
+    <string name="prev_btn_text">PREVIOUS</string>
+    <string name="next_btn_text">NEXT</string>
 </resources>

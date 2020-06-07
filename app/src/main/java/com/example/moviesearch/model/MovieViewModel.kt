@@ -18,8 +18,8 @@ class MovieViewModel(application: Application) : AndroidViewModel(application) {
 
     val movieSavedList = movieRepository.getAllSavedMovies()
 
-    fun getMoviesSearch(genres: String, sortBy: String, apiKey: String, yearGte: String, yearLte: String){
-        movieRepository.setMovieList(genres, sortBy, apiKey, yearGte, yearLte)
+    fun getMoviesSearch(genres: String, sortBy: String, apiKey: String, yearGte: String, yearLte: String, page: Int){
+        movieRepository.setMovieList(genres, sortBy, apiKey, yearGte, yearLte, page)
     }
 
     fun getMovieDetails(id: String, apiKey: String){

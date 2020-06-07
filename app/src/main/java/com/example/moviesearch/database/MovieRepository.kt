@@ -56,7 +56,7 @@ class MovieRepository(context: Context) {
         movieList.value = moviesLoadState
     }
 
-    fun setMovieList(genres: String, sortBy: String, apiKey: String, yearGte: String, yearLte: String) {
+    fun setMovieList(genres: String, sortBy: String, apiKey: String, yearGte: String, yearLte: String, page: Int) {
         setMoviesLoadState()
 
         val moviesFound = ArrayList<MovieItemSearch>()
@@ -66,7 +66,7 @@ class MovieRepository(context: Context) {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         val movieApi = retrofit.create(MovieApi::class.java)
-        val jsonCall = movieApi.getMovies(apiKey, Common.DEFAULT_LANG, sortBy, false, false, Common.DEFAULT_PAGE, genres, yearGte, yearLte)
+        val jsonCall = movieApi.getMovies(apiKey, Common.DEFAULT_LANG, sortBy, false, false, page, genres, yearGte, yearLte)
         jsonCall.enqueue(object: Callback<MovieList>{
             override fun onFailure(call: Call<MovieList>, t: Throwable) {
             }
@@ -75,8 +75,16 @@ class MovieRepository(context: Context) {
                 if (!response.isSuccessful) {
                     return
                 }
-                var results = response.body()?.getResults()
-                for (i in 0 until results?.size()!!) {
+                var responseBody = response.body()
+                if (responseBody == null)
+                    return
+                val maxPages = responseBody.getAmountOfPages().toIntOrNull()
+                if (maxPages != null)
+                    Common.maxPages = maxPages
+                else
+                    Common.maxPages = 0
+                var results = responseBody.getResults()
+                for (i in 0 until results.size()) {
                     var result = results.get(i)?.asJsonObject
                     val posterPath = removeQuotes(result?.get(Common.JSON_POSTER).toString())
                     val movieID = removeQuotes(result?.get(Common.JSON_ID).toString())
