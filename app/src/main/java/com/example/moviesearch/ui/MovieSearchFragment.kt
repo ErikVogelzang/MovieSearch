@@ -31,7 +31,7 @@ class MovieSearchFragment : Fragment() {
     private  var currentTextState = SearchTextState()
     private lateinit var movieListViewModel: MovieViewModel
     private val movieList = arrayListOf<MovieItemSearch>()
-    private lateinit var movieAdapter: MovieAdapter
+    private lateinit var movieSearchAdapter: MovieSearchAdapter
 
 
 
@@ -123,13 +123,13 @@ class MovieSearchFragment : Fragment() {
     private fun initViews() {
         val gridLayoutManager = GridLayoutManager(requireActivity(), Common.DEFAULT_SPAN_COUNT,
             RecyclerView.VERTICAL, false)
-        rvMovies.layoutManager = gridLayoutManager
+        rvMoviesSearch.layoutManager = gridLayoutManager
 
 
-        rvMovies.viewTreeObserver.addOnGlobalLayoutListener(object :
+        rvMoviesSearch.viewTreeObserver.addOnGlobalLayoutListener(object :
             ViewTreeObserver.OnGlobalLayoutListener {
             override fun onGlobalLayout() {
-                rvMovies.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                rvMoviesSearch.viewTreeObserver.removeOnGlobalLayoutListener(this)
                 gridLayoutManager.spanCount = calculateSpanCount()
                 gridLayoutManager.requestLayout()
             }
@@ -143,12 +143,12 @@ class MovieSearchFragment : Fragment() {
         btnNext.setOnClickListener(setBtnOnClick(this::onNextBtnClick))
         ddCatPrimary.adapter = setSpinnerAdapter(categories.toList())
         ddSortByMain.adapter = setSpinnerAdapter(sortOptions.toList())
-        ddSortByDirection.adapter = setSpinnerAdapter(sortDirections.toList())
+        ddSortByDirectionSearch.adapter = setSpinnerAdapter(sortDirections.toList())
         ddSortByYear.adapter = setSpinnerAdapter(sortByYearOptions.toList())
         ddCatPrimary.onItemSelectedListener = initSpinner(this::onPrimaryCatItemSelect)
         ddCatSecondary.onItemSelectedListener = initSpinner()
         ddSortByMain.onItemSelectedListener = initSpinner()
-        ddSortByDirection.onItemSelectedListener = initSpinner()
+        ddSortByDirectionSearch.onItemSelectedListener = initSpinner()
         ddSortByYear.onItemSelectedListener = initSpinner(this::onSortByYearItemSelect)
         if (Common.searchFragmentDestroyed) {
             ddCatPrimary.setSelection(Common.catPriSelected)
@@ -221,7 +221,7 @@ class MovieSearchFragment : Fragment() {
     }
 
     private fun calculateSpanCount(): Int{
-        val viewWidth = rvMovies.measuredWidth
+        val viewWidth = rvMoviesSearch.measuredWidth
         val moviePosterWidth = resources.getDimension(R.dimen.poster_width)
         val moviePosterMargin = resources.getDimension(R.dimen.margin_medium)
         val spanCount = Math.floor((viewWidth / (moviePosterWidth +
@@ -295,7 +295,7 @@ class MovieSearchFragment : Fragment() {
             "Vote Count" -> str = "vote_count"
             else -> str = str.toLowerCase()
         }
-        when (ddSortByDirection.selectedItem.toString()) {
+        when (ddSortByDirectionSearch.selectedItem.toString()) {
             "Ascending" -> str = str.plus(".asc")
             "Descending" -> str = str.plus(".desc")
         }
@@ -320,10 +320,10 @@ class MovieSearchFragment : Fragment() {
     }
 
     private fun assignMovieAdapter() {
-        movieAdapter = MovieAdapter(
+        movieSearchAdapter = MovieSearchAdapter(
             movieList,
             { movieItem -> onMovieClick(movieItem) })
-        rvMovies.adapter = movieAdapter
+        rvMoviesSearch.adapter = movieSearchAdapter
     }
 
     private fun getYearGteQuery(): String {

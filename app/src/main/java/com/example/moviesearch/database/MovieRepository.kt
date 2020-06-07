@@ -185,4 +185,6 @@ class MovieRepository(context: Context) {
     suspend fun deleteAllSavedMovies() = movieDao.deleteAllMovies()
 
     suspend fun deleteSavedMovie(movie: MovieSaved) = movieDao.deleteMovie(movie)
+
+    fun loadMovieWithID(id: String): LiveData<MovieSaved> = movieDao.loadMovieWithID(id)
 }

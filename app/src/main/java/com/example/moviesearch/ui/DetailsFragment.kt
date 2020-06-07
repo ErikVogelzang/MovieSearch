@@ -2,10 +2,9 @@ package com.example.moviesearch.ui
 
 
 import android.os.Bundle
+import android.util.Log
+import android.view.*
 import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import android.webkit.WebChromeClient
 import android.widget.TextView
 import androidx.lifecycle.Observer
@@ -14,6 +13,7 @@ import androidx.navigation.fragment.navArgs
 import com.example.moviesearch.R
 import com.example.moviesearch.common.Common
 import com.example.moviesearch.model.MovieItemDetails
+import com.example.moviesearch.model.MovieSaved
 import com.example.moviesearch.model.MovieViewModel
 import kotlinx.android.synthetic.main.fragment_details.*
 
@@ -25,12 +25,14 @@ class DetailsFragment : Fragment() {
     private val args: DetailsFragmentArgs by navArgs()
     private lateinit var movieViewModel: MovieViewModel
     private lateinit var movieDetails: MovieItemDetails
+    private lateinit var menu: Menu
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
+        setHasOptionsMenu(true)
         return inflater.inflate(R.layout.fragment_details, container, false)
     }
 
@@ -93,6 +95,16 @@ class DetailsFragment : Fragment() {
                 wvVideo.clearCache(false)
             }
         })
+        movieViewModel.loadMovieWithID(args.movieID.toString()).observe(this.viewLifecycleOwner, Observer {
+            if (it != null) {
+                menu.setGroupVisible(R.id.save, false)
+                menu.setGroupVisible(R.id.delete, true)
+            }
+            else {
+                menu.setGroupVisible(R.id.delete, false)
+                menu.setGroupVisible(R.id.save, true)
+            }
+        })
         movieViewModel.getMovieDetails(args.movieID.toString(), getString(R.string.movie_db_api_key))
     }
 
@@ -132,5 +144,46 @@ class DetailsFragment : Fragment() {
         tvPlotText.visibility = View.GONE
         movieViewModel.clearMovieDetails()
         super.onDestroyView()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        menu.clear()
+        inflater.inflate(R.menu.menu_details, menu)
+        this.menu = menu
+        super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_save_movie -> {
+                movieViewModel.saveMovie(saveMovie())
+                true
+            }
+            R.id.action_delete_movie -> {
+                movieViewModel.deleteSavedMovie(saveMovie())
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    private fun saveMovie(): MovieSaved {
+        return MovieSaved(
+            args.movieID.toString(),
+            args.posterPath,
+            movieDetails.backdropPath,
+            movieDetails.budget,
+            movieDetails.genres,
+            movieDetails.imdbID,
+            movieDetails.language,
+            movieDetails.title,
+            movieDetails.overview,
+            movieDetails.release,
+            movieDetails.revenue,
+            movieDetails.length,
+            movieDetails.rating,
+            movieDetails.trailer,
+            movieDetails.cast
+        )
     }
 }

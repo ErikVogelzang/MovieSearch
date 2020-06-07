@@ -17,6 +17,7 @@ interface MovieDao {
 
     @Delete
     suspend fun deleteMovie(movie: MovieSaved)
-}
 
-//"SELECT * FROM gameTable ORDER BY sortDate"
+    @Query("SELECT * FROM movieTable WHERE movieID = :id")
+    fun loadMovieWithID(id: String): LiveData<MovieSaved>
+}

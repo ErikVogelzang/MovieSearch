@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import com.example.moviesearch.api.MovieDetails
+import com.example.moviesearch.common.Common
 import com.example.moviesearch.database.MovieRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -69,15 +70,9 @@ class MovieViewModel(application: Application) : AndroidViewModel(application) {
     }
 
 
-    fun getIfMovieSaved(id: String): Boolean {
-        for (movie in movieSavedList.value!!.iterator()) {
-            if (movie.movieID == id)
-                return true
-        }
-        return false
-    }
-
     fun getAllSavedMovies(): LiveData<List<MovieSaved>> = movieSavedList
 
     fun getLastDeletedMovies(): List<MovieSaved> = movieDeletedList
+
+    fun loadMovieWithID(id: String): LiveData<MovieSaved> = movieRepository.loadMovieWithID(id)
 }

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Search</string>
+    <string name="app_name">Search Movies</string>
     <string name="search_frag_title">Search</string>
     <string name="saved_frag_title">Saved</string>
     <string name="release">Release:</string>
@@ -14,4 +14,8 @@
     <string name="sort_year_text">Filter Year</string>
     <string name="prev_btn_text">PREVIOUS</string>
     <string name="next_btn_text">NEXT</string>
+    <string name="menu_save_title">Save Movie</string>
+    <string name="menu_share_title">Share Movie</string>
+    <string name="menu_delete_title">Delete Movie</string>
+    <string name="menu_delete_all_title">Delete All Movies</string>
 </resources>

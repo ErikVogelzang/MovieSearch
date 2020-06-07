@@ -1,7 +1,6 @@
 package com.example.moviesearch.ui
 
 import android.content.Context
-import android.opengl.Visibility
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,8 +10,8 @@ import com.example.moviesearch.common.Common
 import com.example.moviesearch.model.MovieItemSearch
 import kotlinx.android.synthetic.main.item_movie.view.*
 
-class MovieAdapter(val movieList: List<MovieItemSearch>, private val onClick: (MovieItemSearch) -> Unit) :
-    RecyclerView.Adapter<MovieAdapter.ViewHolder>() {
+class MovieSearchAdapter(val movieList: List<MovieItemSearch>, private val onClick: (MovieItemSearch) -> Unit) :
+    RecyclerView.Adapter<MovieSearchAdapter.ViewHolder>() {
 
     private lateinit var context: Context
 

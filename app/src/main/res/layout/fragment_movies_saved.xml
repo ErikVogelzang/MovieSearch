@@ -7,14 +7,31 @@
     android:background="@color/cardview_dark_background"
     tools:context=".ui.MoviesSavedFragment">
 
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="318dp"
-        android:layout_marginEnd="163dp"
-        android:text="MOVIESAVED"
-        android:textColor="#FFFFFF"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvMoviesSaved"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="18dp"
+        android:background="@color/cardview_dark_background"
+        android:clipToPadding="false"
+        android:padding="5dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/ddSortByDirectionSaved" />
+
+    <Spinner
+        android:id="@+id/ddSortByDirectionSaved"
+        android:layout_width="166dp"
+        android:layout_height="45dp"
+        android:layout_marginStart="19dp"
+        android:layout_marginTop="55dp"
+        android:layout_marginEnd="19dp"
+        android:background="@drawable/custom_spinner"
+        android:dropDownWidth="wrap_content"
+        android:popupBackground="@color/colorGrey"
+        android:spinnerMode="dropdown"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

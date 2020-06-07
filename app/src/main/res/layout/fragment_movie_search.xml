@@ -47,7 +47,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <Spinner
-        android:id="@+id/ddSortByDirection"
+        android:id="@+id/ddSortByDirectionSearch"
         android:layout_width="166dp"
         android:layout_height="45dp"
         android:layout_marginTop="104dp"
@@ -73,7 +73,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvMovies"
+        android:id="@+id/rvMoviesSearch"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginTop="18dp"
