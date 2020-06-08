@@ -15,7 +15,7 @@
     <string name="prev_btn_text">PREVIOUS</string>
     <string name="next_btn_text">NEXT</string>
     <string name="menu_save_title">Save Movie</string>
-    <string name="menu_share_title">Share Movie</string>
+    <string name="menu_share_title">Share IMDB Link Via WhatsApp</string>
     <string name="menu_delete_title">Delete Movie</string>
     <string name="menu_delete_all_title">Delete All Movies</string>
     <string name="undo_text">UNDO</string>
@@ -23,4 +23,6 @@
     <string name="deleted_movie_text">Deleted Movie</string>
     <string name="deleted_all_movies_text">Deleted All Movies</string>
     <string name="navigation_drawer">test</string>
+    <string name="whatsapp_error">Whatsapp is not installed.</string>
+    <string name="imdb_no_id">The movie does not exist on IMDB.</string>
 </resources>

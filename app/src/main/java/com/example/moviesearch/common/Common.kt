@@ -57,6 +57,7 @@ class Common {
         const val STRING_GTELTE = ">= <="
         const val STRING_QUOTE = "\""
         const val BASE_IMAGE_URL = "https://image.tmdb.org/t/p/w500/"
+        const val BASE_IMDB_URL = "https://www.imdb.com/title/"
         const val DEFAULT_LANG = "en-US"
         const val DEFAULT_SORT = "popularity.desc"
         const val EXTRA_APPEND_VAL = "videos,credits"

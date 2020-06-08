@@ -18,6 +18,10 @@ import com.example.moviesearch.model.MovieSaved
 import com.example.moviesearch.model.MovieViewModel
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.fragment_details.*
+import androidx.core.content.ContextCompat.startActivity
+import android.content.Intent
+import android.widget.Toast
+
 
 /**
  * A simple [Fragment] subclass.
@@ -150,6 +154,34 @@ class DetailsFragment : Fragment() {
             R.id.action_delete_movie -> {
                 movieViewModel.deleteSavedMovie(saveMovie())
                 snack = Common.showUndoSnackbar(getString(R.string.deleted_movie_text), this::onDeleteUndo, requireView(), resources)
+                true
+            }
+            R.id.action_share_movie -> {
+                if (movieDetails.imdbID != Common.STRING_EMPTY) {
+                    val whatsappIntent = Intent(Intent.ACTION_SEND)
+                    whatsappIntent.type = "text/plain"
+                    whatsappIntent.setPackage("com.whatsapp")
+                    whatsappIntent.putExtra(
+                        Intent.EXTRA_TEXT,
+                        Common.BASE_IMDB_URL.plus(movieDetails.imdbID)
+                    )
+                    try {
+                        requireActivity().startActivity(whatsappIntent)
+                    } catch (ex: android.content.ActivityNotFoundException) {
+                        Toast.makeText(
+                            requireContext(),
+                            getString(R.string.whatsapp_error),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+                else {
+                    Toast.makeText(
+                        requireContext(),
+                        getString(R.string.imdb_no_id),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
                 true
             }
             else -> super.onOptionsItemSelected(item)
