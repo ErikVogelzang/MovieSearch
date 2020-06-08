@@ -20,6 +20,8 @@ import com.example.moviesearch.model.MovieItemSearch
 import com.example.moviesearch.model.MovieSaved
 import com.example.moviesearch.model.MovieViewModel
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.android.synthetic.main.fragment_details.*
 import kotlinx.android.synthetic.main.fragment_movie_search.*
 import kotlinx.android.synthetic.main.fragment_movies_saved.*
@@ -34,6 +36,7 @@ class MoviesSavedFragment : Fragment() {
     private val moviesSavedAsData = arrayListOf<MovieSaved>()
     private lateinit var movieAdapter: MovieSearchAdapter
     private lateinit var menu: Menu
+    private lateinit var snack: Snackbar
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -65,10 +68,7 @@ class MoviesSavedFragment : Fragment() {
                 moviesSaved.add(MovieItemSearch(movie.posterPath, movie.movieID, movie.title, false))
                 Common.savedMoviesNum = Common.savedMoviesNum + 1
             }
-            movieAdapter = MovieSearchAdapter(
-                moviesSaved,
-                { movieItem -> onMovieClick(movieItem) })
-            rvMoviesSaved.adapter = movieAdapter
+            assignAdapter()
             if (this::menu.isInitialized)
                 updateDeleteIcon(menu)
         })
@@ -82,6 +82,8 @@ class MoviesSavedFragment : Fragment() {
     }
 
     private fun initViews() {
+        //if (this::moviesSavedViewModel.isInitialized)
+            //moviesSavedViewModel
         val gridLayoutManager = GridLayoutManager(requireActivity(), Common.DEFAULT_SPAN_COUNT,
             RecyclerView.VERTICAL, false)
         rvMoviesSaved.layoutManager = gridLayoutManager
@@ -108,7 +110,7 @@ class MoviesSavedFragment : Fragment() {
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 moviesSavedViewModel.deleteSavedMovie(moviesSavedAsData[viewHolder.adapterPosition])
-                showUndoSnackbar(getString(R.string.deleted_movie_text), this@MoviesSavedFragment::onDeleteUndo, requireView(), resources)
+                snack = showUndoSnackbar(getString(R.string.deleted_movie_text), this@MoviesSavedFragment::onDeleteUndo, requireView(), resources)
             }
         }
         val itemTouchHelper = ItemTouchHelper(itemTouchHelperCallback)
@@ -126,7 +128,7 @@ class MoviesSavedFragment : Fragment() {
 
     private fun onDeleteUndo() {
         for (movie in moviesSavedViewModel.getChangedMovies()) {
-            moviesSavedViewModel.saveMovie(movie)
+            moviesSavedViewModel.saveMovie(movie, true)
         }
     }
 
@@ -139,7 +141,7 @@ class MoviesSavedFragment : Fragment() {
         return when (item.itemId) {
             R.id.action_delete_all_movies -> {
                 moviesSavedViewModel.deleteAllSavedMovies()
-                Common.showUndoSnackbar(getString(R.string.deleted_all_movies_text), this::onDeleteUndo, requireView(), resources)
+                snack = Common.showUndoSnackbar(getString(R.string.deleted_all_movies_text), this::onDeleteUndo, requireView(), resources)
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -158,5 +160,18 @@ class MoviesSavedFragment : Fragment() {
         this.menu = menu
         updateDeleteIcon(menu)
         super.onPrepareOptionsMenu(menu)
+    }
+
+    override fun onDestroyView() {
+        if (this::snack.isInitialized)
+            snack.dismiss()
+        super.onDestroyView()
+    }
+
+    private fun assignAdapter() {
+        movieAdapter = MovieSearchAdapter(
+            moviesSaved,
+            { movieItem -> onMovieClick(movieItem) })
+        rvMoviesSaved.adapter = movieAdapter
     }
 }

@@ -28,6 +28,7 @@ class DetailsFragment : Fragment() {
     private lateinit var movieViewModel: MovieViewModel
     private lateinit var movieDetails: MovieItemDetails
     private lateinit var menu: Menu
+    private lateinit var snack: Snackbar
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -46,6 +47,9 @@ class DetailsFragment : Fragment() {
 
     private fun initViewModel() {
         movieViewModel = ViewModelProviders.of(requireActivity()).get(MovieViewModel::class.java)
+        movieViewModel.getAllSavedMovies().observe(this.viewLifecycleOwner, Observer {
+
+        })
         movieViewModel.getMovieDetailsLiveData().observe(this.viewLifecycleOwner, Observer {
             movieDetails = it
             if (!Common.checkForValidJSonReturn(args.posterPath))
@@ -123,28 +127,9 @@ class DetailsFragment : Fragment() {
     }
 
     override fun onDestroyView() {
-        tvBudgetText.visibility = View.GONE
-        tvBudget.visibility = View.GONE
-        ivBackdrop.visibility = View.GONE
-        ivPoster.visibility = View.GONE
-        tvTitle.visibility = View.GONE
-        tvLanguage.visibility = View.GONE
-        tvLanguageText.visibility = View.GONE
-        tvRelease.visibility = View.GONE
-        tvReleaseText.visibility = View.GONE
-        tvRevenue.visibility = View.GONE
-        tvRevenueText.visibility = View.GONE
-        tvLength.visibility = View.GONE
-        tvLengthText.visibility = View.GONE
-        tvRating.visibility = View.GONE
-        tvRatingText.visibility = View.GONE
-        tvGenres.visibility = View.GONE
-        tvGenresText.visibility = View.GONE
-        tvCast.visibility = View.GONE
-        tvCastText.visibility = View.GONE
-        tvPlot.visibility = View.GONE
-        tvPlotText.visibility = View.GONE
         movieViewModel.clearMovieDetails()
+        if (this::snack.isInitialized)
+            snack.dismiss()
         super.onDestroyView()
     }
 
@@ -159,12 +144,12 @@ class DetailsFragment : Fragment() {
         return when (item.itemId) {
             R.id.action_save_movie -> {
                 movieViewModel.saveMovie(saveMovie())
-                Common.showUndoSnackbar(getString(R.string.saved_movie_text), this::onSaveUndo, requireView(), resources)
+                snack = Common.showUndoSnackbar(getString(R.string.saved_movie_text), this::onSaveUndo, requireView(), resources)
                 true
             }
             R.id.action_delete_movie -> {
                 movieViewModel.deleteSavedMovie(saveMovie())
-                Common.showUndoSnackbar(getString(R.string.deleted_movie_text), this::onDeleteUndo, requireView(), resources)
+                snack = Common.showUndoSnackbar(getString(R.string.deleted_movie_text), this::onDeleteUndo, requireView(), resources)
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -196,12 +181,12 @@ class DetailsFragment : Fragment() {
     private fun onSaveUndo() {
         var changedMovies = movieViewModel.getChangedMovies()
         if (changedMovies.size > 0)
-            movieViewModel.deleteSavedMovie(changedMovies[0])
+            movieViewModel.deleteSavedMovie(changedMovies[0], true)
     }
 
     private fun onDeleteUndo() {
-        var changedMovies = movieViewModel.getChangedMovies()
-        if (changedMovies.size > 0)
-            movieViewModel.saveMovie(changedMovies[0])
+        for (movie in movieViewModel.getChangedMovies()) {
+            movieViewModel.saveMovie(movie, true)
+        }
     }
 }

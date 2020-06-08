@@ -12,6 +12,9 @@
         <action
             android:id="@+id/action_MovieSearchFragment_to_detailsFragment"
             app:destination="@id/detailsFragment" />
+        <action
+            android:id="@+id/action_MovieSearchFragment_to_MoviesSavedFragment"
+            app:destination="@id/MoviesSavedFragment" />
     </fragment>
     <fragment
         android:id="@+id/MoviesSavedFragment"
@@ -20,6 +23,9 @@
         <action
             android:id="@+id/action_MoviesSavedFragment_to_detailsFragment"
             app:destination="@id/detailsFragment" />
+        <action
+            android:id="@+id/action_MoviesSavedFragment_to_MovieSearchFragment"
+            app:destination="@id/MovieSearchFragment" />
     </fragment>
     <fragment
         android:id="@+id/detailsFragment"
@@ -32,5 +38,11 @@
         <argument
             android:name="posterPath"
             app:argType="string" />
+        <action
+            android:id="@+id/action_detailsFragment_to_MovieSearchFragment"
+            app:destination="@id/MovieSearchFragment" />
+        <action
+            android:id="@+id/action_detailsFragment_to_MoviesSavedFragment"
+            app:destination="@id/MoviesSavedFragment" />
     </fragment>
 </navigation>

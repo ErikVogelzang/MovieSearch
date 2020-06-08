@@ -17,6 +17,10 @@ import com.bumptech.glide.request.target.Target
 import com.example.moviesearch.R
 import com.google.android.material.snackbar.Snackbar
 import java.util.*
+import androidx.coordinatorlayout.widget.CoordinatorLayout
+import kotlinx.android.synthetic.main.activity_main.view.*
+import kotlinx.android.synthetic.main.content_main.view.*
+
 
 class Common {
     companion object {
@@ -111,12 +115,14 @@ class Common {
                 .into(imageView)
         }
 
-        fun showUndoSnackbar(text: String, onUndo: () -> Unit, view: View, resources: Resources) {
-            Snackbar.make(view, text, Snackbar.LENGTH_LONG)
+        fun showUndoSnackbar(text: String, onUndo: () -> Unit, view: View, resources: Resources) : Snackbar {
+            val snack = Snackbar.make(view, text, Snackbar.LENGTH_LONG)
                 .setActionTextColor(ResourcesCompat.getColor(resources, R.color.blue, null))
                 .setAction(R.string.undo_text, View.OnClickListener {
                     onUndo()
-                }).show()
+                })
+            snack.show()
+            return snack
         }
     }
 }

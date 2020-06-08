@@ -22,4 +22,5 @@
     <string name="saved_movie_text">Saved Movie</string>
     <string name="deleted_movie_text">Deleted Movie</string>
     <string name="deleted_all_movies_text">Deleted All Movies</string>
+    <string name="navigation_drawer">test</string>
 </resources>
