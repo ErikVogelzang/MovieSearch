@@ -14,7 +14,7 @@ import kotlinx.coroutines.withContext
 
 class MovieViewModel(application: Application) : AndroidViewModel(application) {
     private val movieRepository = MovieRepository(application.applicationContext)
-    private var movieDeletedList = arrayListOf<MovieSaved>()
+    private var movieChangedList = arrayListOf<MovieSaved>()
     private val mainScope = CoroutineScope(Dispatchers.Main)
 
     val movieSavedList = movieRepository.getAllSavedMovies()
@@ -42,15 +42,17 @@ class MovieViewModel(application: Application) : AndroidViewModel(application) {
     fun saveMovie(movie: MovieSaved) {
         mainScope.launch {
             withContext(Dispatchers.IO) {
+                movieChangedList.clear()
+                movieChangedList.add(movie)
                 movieRepository.saveMovie(movie)
             }
         }
     }
 
     fun deleteAllSavedMovies() {
-        movieDeletedList.clear()
+        movieChangedList.clear()
         for (movie in movieSavedList.value!!.iterator()) {
-            movieDeletedList.add(movie)
+            movieChangedList.add(movie)
         }
         mainScope.launch {
             withContext(Dispatchers.IO) {
@@ -60,8 +62,8 @@ class MovieViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun deleteSavedMovie(movie: MovieSaved) {
-        movieDeletedList.clear()
-        movieDeletedList.add(movie)
+        movieChangedList.clear()
+        movieChangedList.add(movie)
         mainScope.launch {
             withContext(Dispatchers.IO) {
                 movieRepository.deleteSavedMovie(movie)
@@ -72,7 +74,7 @@ class MovieViewModel(application: Application) : AndroidViewModel(application) {
 
     fun getAllSavedMovies(): LiveData<List<MovieSaved>> = movieSavedList
 
-    fun getLastDeletedMovies(): List<MovieSaved> = movieDeletedList
+    fun getChangedMovies(): List<MovieSaved> = movieChangedList
 
     fun loadMovieWithID(id: String): LiveData<MovieSaved> = movieRepository.loadMovieWithID(id)
 }

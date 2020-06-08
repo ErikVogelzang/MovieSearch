@@ -1,16 +1,21 @@
 package com.example.moviesearch.common
 import android.content.Context
+import android.content.res.Resources
 import android.graphics.drawable.Drawable
 import android.media.Image
 import android.util.Log
+import android.view.Menu
 import android.view.View
 import android.widget.ImageView
 import android.widget.ProgressBar
+import androidx.core.content.res.ResourcesCompat
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
+import com.example.moviesearch.R
+import com.google.android.material.snackbar.Snackbar
 import java.util.*
 
 class Common {
@@ -22,6 +27,7 @@ class Common {
         var sortBySelected = 0
         var searchFragmentDestroyed = false
         var maxPages = 1
+        var savedMoviesNum = 0
         const val DEFAULT_SPAN_COUNT = 1
         const val BASE_URL_SEARCH = "https://api.themoviedb.org/3/discover/"
         const val BASE_QUERY_SEARCH = "movie?"
@@ -103,6 +109,14 @@ class Common {
 
                 })
                 .into(imageView)
+        }
+
+        fun showUndoSnackbar(text: String, onUndo: () -> Unit, view: View, resources: Resources) {
+            Snackbar.make(view, text, Snackbar.LENGTH_LONG)
+                .setActionTextColor(ResourcesCompat.getColor(resources, R.color.blue, null))
+                .setAction(R.string.undo_text, View.OnClickListener {
+                    onUndo()
+                }).show()
         }
     }
 }

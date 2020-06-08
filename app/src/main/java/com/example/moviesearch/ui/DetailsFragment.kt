@@ -7,6 +7,7 @@ import android.view.*
 import androidx.fragment.app.Fragment
 import android.webkit.WebChromeClient
 import android.widget.TextView
+import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.navArgs
@@ -15,6 +16,7 @@ import com.example.moviesearch.common.Common
 import com.example.moviesearch.model.MovieItemDetails
 import com.example.moviesearch.model.MovieSaved
 import com.example.moviesearch.model.MovieViewModel
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.fragment_details.*
 
 /**
@@ -157,10 +159,12 @@ class DetailsFragment : Fragment() {
         return when (item.itemId) {
             R.id.action_save_movie -> {
                 movieViewModel.saveMovie(saveMovie())
+                Common.showUndoSnackbar(getString(R.string.saved_movie_text), this::onSaveUndo, requireView(), resources)
                 true
             }
             R.id.action_delete_movie -> {
                 movieViewModel.deleteSavedMovie(saveMovie())
+                Common.showUndoSnackbar(getString(R.string.deleted_movie_text), this::onDeleteUndo, requireView(), resources)
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -185,5 +189,19 @@ class DetailsFragment : Fragment() {
             movieDetails.trailer,
             movieDetails.cast
         )
+    }
+
+
+
+    private fun onSaveUndo() {
+        var changedMovies = movieViewModel.getChangedMovies()
+        if (changedMovies.size > 0)
+            movieViewModel.deleteSavedMovie(changedMovies[0])
+    }
+
+    private fun onDeleteUndo() {
+        var changedMovies = movieViewModel.getChangedMovies()
+        if (changedMovies.size > 0)
+            movieViewModel.saveMovie(changedMovies[0])
     }
 }
