@@ -9,7 +9,7 @@
 
 
     <ImageView
-        android:id="@+id/ivPoster"
+        android:id="@+id/ivBackdrop"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:scaleType="fitXY"
@@ -19,7 +19,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/no_image_poster" />
+        app:srcCompat="@drawable/no_image_backdrop" />
 
     <ImageView
         android:id="@+id/ivDarkenBackground"
@@ -34,7 +34,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <ProgressBar
-        android:id="@+id/pbPoster"
+        android:id="@+id/pbBackdrop"
         style="?android:attr/progressBarStyle"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -52,7 +52,8 @@
     <ScrollView
         android:id="@+id/svScroll"
         android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_height="wrap_content"
+        android:paddingBottom="4dp"
         android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -61,59 +62,49 @@
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:visibility="visible">
 
             <ImageView
-                android:id="@+id/ivBackdrop"
-                android:layout_width="0dp"
-                android:layout_height="200dp"
+                android:id="@+id/ivPoster"
+                android:layout_width="300dp"
+                android:layout_height="400dp"
+                android:layout_marginTop="10dp"
                 android:scaleType="fitXY"
                 android:src="@color/colorGrey"
+                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/no_image_backdrop" />
+                app:layout_constraintTop_toBottomOf="@id/wvVideo"
+                app:srcCompat="@drawable/no_image_poster" />
 
             <ProgressBar
-                android:id="@+id/pbBackdrop"
+                android:id="@+id/pbPoster"
                 style="?android:attr/progressBarStyle"
-                android:layout_width="0dp"
-                android:layout_height="200dp"
-                android:layout_marginStart="150dp"
-                android:layout_marginTop="50dp"
-                android:layout_marginEnd="150dp"
+                android:layout_width="300dp"
+                android:layout_height="0dp"
+                android:layout_marginStart="50dp"
+                android:layout_marginTop="200dp"
+                android:layout_marginEnd="50dp"
+                android:layout_marginBottom="200dp"
                 android:indeterminate="false"
                 android:indeterminateTint="#000000"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <TextView
-                android:id="@+id/tvTitle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:layout_marginBottom="5dp"
-                android:text="Avengers"
-                android:textAlignment="center"
-                android:textAllCaps="true"
-                android:textColor="@android:color/holo_blue_dark"
-                android:textSize="40sp"
-                android:textStyle="bold"
-                app:layout_constraintBottom_toTopOf="@id/wvVideo"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/ivBackdrop" />
+                android:visibility="visible"
+                app:layout_constraintBottom_toBottomOf="@id/ivPoster"
+                app:layout_constraintEnd_toEndOf="@id/ivPoster"
+                app:layout_constraintStart_toStartOf="@id/ivPoster"
+                app:layout_constraintTop_toTopOf="@id/ivPoster" />
 
             <WebView
                 android:id="@+id/wvVideo"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="246dp"
+                android:layout_marginStart="350dp"
+                android:layout_marginTop="50dp"
                 android:requiresFadingEdge="horizontal|vertical"
-                app:layout_constraintBottom_toTopOf="@id/llStats"
+                android:visibility="visible"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/tvTitle">
+                app:layout_constraintTop_toTopOf="parent">
 
             </WebView>
 
@@ -121,13 +112,24 @@
                 android:id="@+id/llStats"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
                 android:orientation="vertical"
                 android:paddingLeft="10dp"
-                app:layout_constraintBottom_toBottomOf="parent"
+                android:visibility="visible"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/wvVideo">
+                app:layout_constraintTop_toTopOf="@id/wvVideo">
+
+                <TextView
+                    android:id="@+id/tvTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Avengers"
+                    android:textAlignment="center"
+                    android:textAllCaps="true"
+                    android:textColor="@android:color/holo_blue_dark"
+                    android:textSize="40sp"
+                    android:textStyle="bold"
+                    android:visibility="visible" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -313,7 +315,7 @@
 
                 <TextView
                     android:id="@+id/tvPlotText"
-                    android:layout_width="match_parent"
+                    android:layout_width="329dp"
                     android:layout_height="wrap_content"
                     android:text="OverviewOverviewOverviewOverviewOverviewOverview"
                     android:textColor="@android:color/holo_blue_dark"
@@ -329,9 +331,9 @@
 
                 <TextView
                     android:id="@+id/tvCastText"
-                    android:layout_width="match_parent"
+                    android:layout_width="404dp"
                     android:layout_height="wrap_content"
-                    android:text="@string/cast"
+                    android:text="OverviewOverviewOverviewOverviewOverviewOverviewOverviewOverviewOverviewOverviewOverviewOverviewOverviewOverviewOverviewOverviewOverviewOverview"
                     android:textColor="@android:color/holo_blue_dark"
                     android:textSize="18sp" />
 

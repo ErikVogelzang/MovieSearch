@@ -33,8 +33,6 @@ class MovieSearchFragment : Fragment() {
     private val movieList = arrayListOf<MovieItemSearch>()
     private lateinit var movieSearchAdapter: MovieSearchAdapter
 
-
-
     private val categories = arrayOf (
         "Select primary genre",
         "Action",
@@ -102,7 +100,7 @@ class MovieSearchFragment : Fragment() {
             movieList.clear()
             movieList.addAll(it)
             assignMovieAdapter()
-            if (Common.maxPages == 0) {
+            if (movieList.size == 0) {
                 btnPrev.visibility = View.GONE
                 etPage.visibility = View.GONE
                 btnNext.visibility = View.GONE
@@ -112,6 +110,7 @@ class MovieSearchFragment : Fragment() {
                 etPage.visibility = View.VISIBLE
                 btnNext.visibility = View.VISIBLE
             }
+
         })
     }
 
@@ -138,22 +137,26 @@ class MovieSearchFragment : Fragment() {
         etYear1.setOnEditorActionListener(setEditTextActionListener(this::setCorrectYearDifference))
         etYear2.setOnEditorActionListener(setEditTextActionListener(this::setCorrectYearDifference))
         etPage.setOnEditorActionListener(setEditTextActionListener(this::onPageTextDone))
-        etPage.setText("1")
         btnPrev.setOnClickListener(setBtnOnClick(this::onPrevBtnClick))
         btnNext.setOnClickListener(setBtnOnClick(this::onNextBtnClick))
         ddCatPrimary.adapter = setSpinnerAdapter(categories.toList())
         ddSortByMain.adapter = setSpinnerAdapter(sortOptions.toList())
-        ddSortByDirectionSearch.adapter = setSpinnerAdapter(sortDirections.toList())
+        ddSortByDirection.adapter = setSpinnerAdapter(sortDirections.toList())
         ddSortByYear.adapter = setSpinnerAdapter(sortByYearOptions.toList())
         ddCatPrimary.onItemSelectedListener = initSpinner(this::onPrimaryCatItemSelect)
         ddCatSecondary.onItemSelectedListener = initSpinner()
         ddSortByMain.onItemSelectedListener = initSpinner()
-        ddSortByDirectionSearch.onItemSelectedListener = initSpinner()
+        ddSortByDirection.onItemSelectedListener = initSpinner()
         ddSortByYear.onItemSelectedListener = initSpinner(this::onSortByYearItemSelect)
-        if (Common.searchFragmentDestroyed) {
-            ddCatPrimary.setSelection(Common.catPriSelected)
-            ddSortByMain.setSelection(Common.sortBySelected)
-            Common.searchFragmentDestroyed = false
+        if (restoreFromDestroyed) {
+            ddCatPrimary.setSelection(catPriSelected)
+            ddSortByMain.setSelection(sortByMainSelected)
+            ddSortByYear.setSelection(sortByYearSelected)
+            ddSortByDirection.setSelection(sortByDirSelected)
+            etPage.setText(page)
+            etYear1.setText(yearOne)
+            etYear2.setText(yearTwo)
+            updateTextState()
         }
     }
 
@@ -201,8 +204,8 @@ class MovieSearchFragment : Fragment() {
                     pos = sel
             }
         }
-        if (restored)
-            pos = Common.catSecSelected
+        if (restoreFromDestroyed)
+            pos = catSecSelected
         ddCatSecondary.adapter = setSpinnerAdapter(secCategories)
         ddCatSecondary.setSelection(pos)
     }
@@ -232,14 +235,6 @@ class MovieSearchFragment : Fragment() {
     override fun onViewStateRestored(savedInstanceState: Bundle?) {
         setSecondaryCategories(ddCatPrimary.selectedItem.toString(), true)
         super.onViewStateRestored(savedInstanceState)
-    }
-
-    override fun onDestroyView() {
-        Common.catPriSelected = ddCatPrimary.selectedItemPosition
-        Common.catSecSelected = ddCatSecondary.selectedItemPosition
-        Common.sortBySelected = ddSortByMain.selectedItemPosition
-        Common.searchFragmentDestroyed = true
-        super.onDestroyView()
     }
 
     private fun getGenreID(genre: String) : String {
@@ -295,7 +290,7 @@ class MovieSearchFragment : Fragment() {
             "Vote Count" -> str = "vote_count"
             else -> str = str.toLowerCase()
         }
-        when (ddSortByDirectionSearch.selectedItem.toString()) {
+        when (ddSortByDirection.selectedItem.toString()) {
             "Ascending" -> str = str.plus(".asc")
             "Descending" -> str = str.plus(".desc")
         }
@@ -402,6 +397,7 @@ class MovieSearchFragment : Fragment() {
             pageNumber = Common.maxPages
         }
         etPage.setText(pageNumber.toString())
+        restoreFromDestroyed = false
         updateTextState()
     }
 
@@ -418,6 +414,7 @@ class MovieSearchFragment : Fragment() {
             return
         etPage.setText(increaseOrDecreaseStringNumber(etPage.text.toString(), false))
         updateTextState()
+        restoreFromDestroyed = false
     }
 
     private fun onNextBtnClick() {
@@ -425,11 +422,12 @@ class MovieSearchFragment : Fragment() {
             return
         etPage.setText(increaseOrDecreaseStringNumber(etPage.text.toString(), true))
         updateTextState()
+        restoreFromDestroyed = false
     }
 
     private fun categoriesChanged(newCategories: Boolean = true) {
-        Log.i("TESTINGTESTING", "ISHERE")
-        if (newCategories)
+        Log.i("gadsfsgsdgfsdds", etPage.text.toString())
+        if (newCategories && !restoreFromDestroyed)
             etPage.setText("1")
         if (isTextStateChanged() || newCategories) {
             fetchMovies()
@@ -472,5 +470,30 @@ class MovieSearchFragment : Fragment() {
                 etYear2.setText(increaseOrDecreaseStringNumber(etYear1.text.toString(), true, gtltDifference))
         }
         updateTextState()
+    }
+
+    override fun onDestroyView() {
+        catPriSelected = ddCatPrimary.selectedItemPosition
+        catSecSelected = ddCatSecondary.selectedItemPosition
+        sortByMainSelected = ddSortByMain.selectedItemPosition
+        sortByYearSelected = ddSortByYear.selectedItemPosition
+        sortByDirSelected = ddSortByDirection.selectedItemPosition
+        page = etPage.text.toString()
+        yearOne = etYear1.text.toString()
+        yearTwo = etYear2.text.toString()
+        restoreFromDestroyed = true
+        super.onDestroyView()
+    }
+
+    companion object {
+        private var catSecSelected = 0
+        private var catPriSelected = 0
+        private var sortByMainSelected = 0
+        private var sortByDirSelected = 0
+        private var sortByYearSelected = 0
+        private var yearOne = Common.STRING_EMPTY
+        private var yearTwo = Common.STRING_EMPTY
+        private var page = Common.STRING_EMPTY
+        private var restoreFromDestroyed = false
     }
 }

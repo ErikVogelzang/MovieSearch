@@ -24,66 +24,69 @@
         android:id="@+id/ddCatSecondary"
         android:layout_width="166dp"
         android:layout_height="45dp"
-        android:layout_marginTop="65dp"
-        android:layout_marginEnd="19dp"
+        android:layout_marginStart="19dp"
+        android:layout_marginTop="10dp"
         android:background="@drawable/custom_spinner"
         android:dropDownWidth="wrap_content"
         android:popupBackground="@color/colorGrey"
         android:spinnerMode="dropdown"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/ddCatPrimary" />
 
     <Spinner
         android:id="@+id/ddSortByMain"
         android:layout_width="166dp"
         android:layout_height="45dp"
         android:layout_marginStart="19dp"
-        android:layout_marginTop="120dp"
+        android:layout_marginTop="10dp"
         android:background="@drawable/custom_spinner"
         android:dropDownWidth="wrap_content"
         android:popupBackground="@color/colorGrey"
         android:spinnerMode="dropdown"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/ddCatSecondary" />
 
     <Spinner
         android:id="@+id/ddSortByDirection"
         android:layout_width="166dp"
         android:layout_height="45dp"
-        android:layout_marginTop="120dp"
-        android:layout_marginEnd="19dp"
+        android:layout_marginStart="19dp"
+        android:layout_marginTop="10dp"
         android:background="@drawable/custom_spinner"
         android:dropDownWidth="wrap_content"
         android:popupBackground="@color/colorGrey"
         android:spinnerMode="dropdown"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/ddSortByMain" />
 
     <Spinner
         android:id="@+id/ddSortByYear"
         android:layout_width="83dp"
         android:layout_height="45dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="175dp"
+        android:layout_marginTop="10dp"
         android:background="@drawable/custom_spinner_small"
         android:dropDownWidth="wrap_content"
         android:popupBackground="@color/colorGrey"
         android:spinnerMode="dropdown"
-        app:layout_constraintStart_toEndOf="@id/tvFilterYear"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintStart_toEndOf="@+id/tvFilterYear"
+        app:layout_constraintTop_toBottomOf="@+id/ddSortByDirection" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvMoviesSearch"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="5dp"
+        android:layout_marginStart="200dp"
+        android:layout_marginBottom="40dp"
         android:background="@color/cardview_dark_background"
         android:clipToPadding="false"
         android:padding="5dp"
-        app:layout_constraintBottom_toTopOf="@id/btnPrev"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/ddSortByYear" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0" />
 
     <TextView
         android:id="@+id/tvFilterYear"
@@ -95,14 +98,14 @@
         android:textColor="@color/colorGrey"
         android:textSize="18sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/ddSortByMain" />
+        app:layout_constraintTop_toBottomOf="@+id/ddSortByDirection" />
 
     <EditText
         android:id="@+id/etYear1"
         android:layout_width="70dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="175dp"
+        android:layout_marginStart="19dp"
+        android:layout_marginTop="20dp"
         android:backgroundTint="@color/colorGrey"
         android:ems="10"
         android:hint="Year"
@@ -118,15 +121,15 @@
         android:textIsSelectable="true"
         android:textSize="18sp"
         android:theme="@style/BlackBGTextView"
-        app:layout_constraintStart_toEndOf="@+id/ddSortByYear"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvFilterYear" />
 
     <EditText
         android:id="@+id/etYear2"
         android:layout_width="70dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="175dp"
+        android:layout_marginTop="20dp"
         android:backgroundTint="@color/colorGrey"
         android:ems="10"
         android:hint="Year2"
@@ -143,28 +146,28 @@
         android:textSize="18sp"
         android:theme="@style/BlackBGTextView"
         android:visibility="visible"
-        app:layout_constraintStart_toEndOf="@id/etYear1"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintStart_toEndOf="@+id/etYear1"
+        app:layout_constraintTop_toBottomOf="@id/tvFilterYear" />
 
     <Button
         android:id="@+id/btnPrev"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="80dp"
         android:text="@string/prev_btn_text"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintEnd_toStartOf="@+id/etPage"
+        app:layout_constraintTop_toBottomOf="@id/rvMoviesSearch" />
 
     <Button
         android:id="@+id/btnNext"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="80dp"
         android:text="@string/next_btn_text"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintStart_toEndOf="@+id/etPage"
+        app:layout_constraintTop_toBottomOf="@id/rvMoviesSearch"/>
 
     <EditText
         android:id="@+id/etPage"
@@ -188,6 +191,7 @@
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="@id/rvMoviesSearch"
+        app:layout_constraintTop_toBottomOf="@id/rvMoviesSearch"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

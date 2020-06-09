@@ -12,6 +12,7 @@ import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
@@ -73,9 +74,9 @@ lateinit var color: Color
         navController.addOnDestinationChangedListener {
                 controller, destination, arguments ->
             when (destination.id) {
-                R.id.MovieSearchFragment -> showNAvigationDrawer(true)
-                R.id.MoviesSavedFragment -> showNAvigationDrawer(true)
-                R.id.detailsFragment -> showNAvigationDrawer(false)
+                R.id.MovieSearchFragment -> showNavigationDrawer(true)
+                R.id.MoviesSavedFragment -> showNavigationDrawer(true)
+                R.id.detailsFragment -> showNavigationDrawer(false)
             }
         }
     }
@@ -115,7 +116,7 @@ lateinit var color: Color
             super.onBackPressed()
     }
 
-    private fun showNAvigationDrawer(visible: Boolean) {
+    private fun showNavigationDrawer(visible: Boolean) {
         toggle.isDrawerIndicatorEnabled = visible
     }
 }

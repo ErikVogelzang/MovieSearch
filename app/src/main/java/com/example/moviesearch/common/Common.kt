@@ -24,14 +24,13 @@ import kotlinx.android.synthetic.main.content_main.view.*
 
 class Common {
     companion object {
-        const val PLACEHOLDER_TEXT = "placeholder"
-        var lastYear = PLACEHOLDER_TEXT
-        var catSecSelected = 0
+        /*var catSecSelected = 0
         var catPriSelected = 0
         var sortBySelected = 0
         var searchFragmentDestroyed = false
-        var maxPages = 1
+        */
         var savedMoviesNum = 0
+        var maxPages = 1
         const val DEFAULT_SPAN_COUNT = 1
         const val BASE_URL_SEARCH = "https://api.themoviedb.org/3/discover/"
         const val BASE_QUERY_SEARCH = "movie?"
@@ -59,9 +58,7 @@ class Common {
         const val BASE_IMAGE_URL = "https://image.tmdb.org/t/p/w500/"
         const val BASE_IMDB_URL = "https://www.imdb.com/title/"
         const val DEFAULT_LANG = "en-US"
-        const val DEFAULT_SORT = "popularity.desc"
         const val EXTRA_APPEND_VAL = "videos,credits"
-        const val DEFAULT_PAGE = 1
         const val DEFAULT_PAGE_MOVIES = 20
         const val MOVIE_START_COUNTER = 1
         const val JSON_POSTER = "poster_path"

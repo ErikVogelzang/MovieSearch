@@ -1,6 +1,7 @@
 package com.example.moviesearch.ui
 
 
+import android.content.ComponentName
 import android.os.Bundle
 import android.util.Log
 import android.view.*
@@ -20,6 +21,7 @@ import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.fragment_details.*
 import androidx.core.content.ContextCompat.startActivity
 import android.content.Intent
+import android.content.res.Configuration
 import android.widget.Toast
 
 
@@ -47,7 +49,6 @@ class DetailsFragment : Fragment() {
         super.onActivityCreated(savedInstanceState)
         initViewModel()
     }
-
 
     private fun initViewModel() {
         movieViewModel = ViewModelProviders.of(requireActivity()).get(MovieViewModel::class.java)
@@ -106,13 +107,16 @@ class DetailsFragment : Fragment() {
             }
         })
         movieViewModel.loadMovieWithID(args.movieID.toString()).observe(this.viewLifecycleOwner, Observer {
-            if (it != null) {
-                menu.setGroupVisible(R.id.save, false)
-                menu.setGroupVisible(R.id.delete, true)
-            }
-            else {
-                menu.setGroupVisible(R.id.delete, false)
-                menu.setGroupVisible(R.id.save, true)
+            if (this::menu.isInitialized) {
+                if (it != null) {
+                    menu.setGroupVisible(R.id.save, false)
+                    menu.setGroupVisible(R.id.delete, true)
+                    saved = false
+                } else {
+                    menu.setGroupVisible(R.id.delete, false)
+                    menu.setGroupVisible(R.id.save, true)
+                    saved = true
+                }
             }
         })
         movieViewModel.getMovieDetails(args.movieID.toString(), getString(R.string.movie_db_api_key))
@@ -131,17 +135,28 @@ class DetailsFragment : Fragment() {
     }
 
     override fun onDestroyView() {
-        movieViewModel.clearMovieDetails()
         if (this::snack.isInitialized)
             snack.dismiss()
+        requireActivity().invalidateOptionsMenu()
         super.onDestroyView()
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        menu.clear()
         inflater.inflate(R.menu.menu_details, menu)
         this.menu = menu
         super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    override fun onPrepareOptionsMenu(menu: Menu) {
+        this.menu = menu
+        if (!saved) {
+            menu.setGroupVisible(R.id.save, false)
+            menu.setGroupVisible(R.id.delete, true)
+        } else {
+            menu.setGroupVisible(R.id.delete, false)
+            menu.setGroupVisible(R.id.save, true)
+        }
+        super.onPrepareOptionsMenu(menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -154,6 +169,10 @@ class DetailsFragment : Fragment() {
             R.id.action_delete_movie -> {
                 movieViewModel.deleteSavedMovie(saveMovie())
                 snack = Common.showUndoSnackbar(getString(R.string.deleted_movie_text), this::onDeleteUndo, requireView(), resources)
+                true
+            }
+            android.R.id.home -> {
+                requireActivity().onBackPressed()
                 true
             }
             R.id.action_share_movie -> {
@@ -220,5 +239,9 @@ class DetailsFragment : Fragment() {
         for (movie in movieViewModel.getChangedMovies()) {
             movieViewModel.saveMovie(movie, true)
         }
+    }
+
+    companion object {
+        private var saved = false
     }
 }
