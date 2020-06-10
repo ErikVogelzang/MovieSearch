@@ -107,8 +107,8 @@
 
             <WebView
                 android:id="@+id/wvVideo"
-                android:layout_width="match_parent"
-                android:layout_height="246dp"
+                android:layout_width="400dp"
+                android:layout_height="225dp"
                 android:requiresFadingEdge="horizontal|vertical"
                 android:visibility="invisible"
                 app:layout_constraintBottom_toTopOf="@id/llStats"

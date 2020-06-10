@@ -47,6 +47,7 @@ class MoviesSavedFragment : Fragment() {
             if (this::menu.isInitialized)
                 updateDeleteIcon(menu)
             movieAdapter.notifyDataSetChanged()
+
         })
     }
 

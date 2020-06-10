@@ -67,13 +67,15 @@
 
             <ImageView
                 android:id="@+id/ivPoster"
-                android:layout_width="300dp"
+                android:layout_width="0dp"
                 android:layout_height="400dp"
+                android:layout_marginStart="50dp"
                 android:layout_marginTop="10dp"
+                android:layout_marginEnd="50dp"
                 android:scaleType="fitXY"
                 android:src="@color/colorGrey"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintEnd_toEndOf="@id/wvVideo"
+                app:layout_constraintStart_toStartOf="@id/wvVideo"
                 app:layout_constraintTop_toBottomOf="@id/wvVideo"
                 app:srcCompat="@drawable/no_image_poster" />
 
@@ -96,8 +98,8 @@
 
             <WebView
                 android:id="@+id/wvVideo"
-                android:layout_width="0dp"
-                android:layout_height="246dp"
+                android:layout_width="400dp"
+                android:layout_height="225dp"
                 android:layout_marginStart="350dp"
                 android:layout_marginTop="50dp"
                 android:requiresFadingEdge="horizontal|vertical"
@@ -360,7 +362,7 @@
 
                 <TextView
                     android:id="@+id/tvCastText"
-                    android:layout_width="404dp"
+                    android:layout_width="373dp"
                     android:layout_height="wrap_content"
                     android:text="OverviewOverviewOverviewOverviewOverviewOverviewOverviewOverviewOverviewOverviewOverviewOverviewOverviewOverviewOverviewOverviewOverviewOverview"
                     android:textColor="@android:color/holo_blue_dark"
