@@ -17,7 +17,6 @@ class MovieSearchAdapter(val movieList: List<MovieItemSearch>, private val onCli
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         context = parent.context
-
         return ViewHolder(
             LayoutInflater.from(context).inflate(R.layout.item_movie, parent, false)
         )
@@ -47,6 +46,10 @@ class MovieSearchAdapter(val movieList: List<MovieItemSearch>, private val onCli
         }
 
         private fun loadRVMovieBehaviour(movieItem: MovieItemSearch) {
+            if (!movieItem.hasBeenFetched) {
+                itemView.tvFallbackTitle.text = Common.STRING_EMPTY
+                itemView.ivMovie.setImageDrawable(null)
+            }
             if (!movieItem.loading) {
                 if (Common.checkForValidJSonReturn(movieItem.posterPath) && !movieItem.hasBeenFetched) {
                     Common.fetchImageGlide(

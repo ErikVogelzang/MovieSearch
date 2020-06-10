@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewTreeObserver
 import android.widget.ImageView
 import android.widget.ProgressBar
+import android.widget.TextView
 import androidx.core.content.res.ResourcesCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -20,6 +21,7 @@ import com.example.moviesearch.model.MovieItemSearch
 import com.example.moviesearch.model.MovieViewModel
 import com.example.moviesearch.ui.MovieSearchAdapter
 import com.google.android.material.snackbar.Snackbar
+import org.w3c.dom.Text
 
 //This class contains functions and constants that are used by multiple other classes.
 
@@ -47,34 +49,45 @@ class Common {
             context: Context,
             imageView: ImageView,
             progressBar: ProgressBar,
-            path: String
+            path: String,
+            adapter: MovieSearchAdapter? = null
         ) {
             Glide.with(context)
                 .load(BASE_IMAGE_URL + path)
-                .listener(object : RequestListener<Drawable> {
-                    override fun onLoadFailed(
-                        e: GlideException?,
-                        model: Any?,
-                        target: Target<Drawable>?,
-                        isFirstResource: Boolean
-                    ): Boolean {
-                        progressBar.visibility = View.GONE
-                        return false
-                    }
+                .dontAnimate()
+                .let {
+                    request ->
+                        if (imageView.drawable != null)
+                            request.placeholder(imageView.drawable.constantState?.newDrawable()?.mutate())
+                        else
+                            request
+                    request.listener(object : RequestListener<Drawable> {
+                        override fun onLoadFailed(
+                            e: GlideException?,
+                            model: Any?,
+                            target: Target<Drawable>?,
+                            isFirstResource: Boolean
+                        ): Boolean {
+                            progressBar.visibility = View.GONE
+                            imageView.visibility = View.VISIBLE
+                            return false
+                        }
 
-                    override fun onResourceReady(
-                        resource: Drawable?,
-                        model: Any?,
-                        target: Target<Drawable>?,
-                        dataSource: DataSource?,
-                        isFirstResource: Boolean
-                    ): Boolean {
-                        progressBar.visibility = View.GONE
-                        return false
-                    }
+                        override fun onResourceReady(
+                            resource: Drawable?,
+                            model: Any?,
+                            target: Target<Drawable>?,
+                            dataSource: DataSource?,
+                            isFirstResource: Boolean
+                        ): Boolean {
+                            progressBar.visibility = View.GONE
+                            imageView.visibility = View.VISIBLE
+                            return false
+                        }
 
-                })
-                .into(imageView)
+                    })
+                }.into(imageView)
+
         }
 
         fun showUndoSnackbar(text: String, onUndo: () -> Unit, view: View, resources: Resources) : Snackbar {

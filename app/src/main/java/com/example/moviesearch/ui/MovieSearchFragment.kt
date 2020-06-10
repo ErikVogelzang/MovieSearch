@@ -16,6 +16,7 @@ import com.example.moviesearch.model.MovieViewModel
 import kotlinx.android.synthetic.main.fragment_movie_search.*
 import kotlin.collections.ArrayList
 import android.content.Context.INPUT_METHOD_SERVICE
+import android.util.Log
 import android.view.inputmethod.InputMethodManager
 import com.example.moviesearch.model.SearchTextState
 
@@ -28,6 +29,7 @@ class MovieSearchFragment : Fragment() {
     private  var currentTextState = SearchTextState()
     private lateinit var movieViewModel: MovieViewModel
     private val movieList = arrayListOf<MovieItemSearch>()
+    private lateinit var movieAdapter: MovieSearchAdapter
 
     private val categories = arrayOf (
         PRI_CAT_START_TEXT,
@@ -82,29 +84,47 @@ class MovieSearchFragment : Fragment() {
         movieViewModel.getMoviesApi().observe(this.viewLifecycleOwner, Observer {
             if (it != null) {
                 rvMoviesSearch.visibility = View.VISIBLE
-
                 movieList.clear()
                 movieList.addAll(it)
-                rvMoviesSearch.adapter = Common.setRVAdapter(movieList, { movieItem -> onMovieClick(movieItem) })
-                maxPages = movieViewModel.getMaxPages()
-                if (movieList.isEmpty()) {
-                    btnPrev.visibility = View.GONE
-                    etPage.visibility = View.GONE
-                    btnNext.visibility = View.GONE
-                } else {
-                    btnPrev.visibility = View.VISIBLE
-                    etPage.visibility = View.VISIBLE
-                    btnNext.visibility = View.VISIBLE
+                if (checkForMovieRestoreChange()) {
+                    movieAdapter.notifyItemRangeChanged(Common.ARRAY_FIRST, movieList.size)
+                    maxPages = movieViewModel.getMaxPages()
+                    if (movieList.isEmpty()) {
+                        btnPrev.visibility = View.GONE
+                        etPage.visibility = View.GONE
+                        btnNext.visibility = View.GONE
+                    } else {
+                        btnPrev.visibility = View.VISIBLE
+                        etPage.visibility = View.VISIBLE
+                        btnNext.visibility = View.VISIBLE
+                    }
                 }
+                else
+                    movieAdapter.notifyDataSetChanged()
+
             }
             else
                 rvMoviesSearch.visibility = View.INVISIBLE
         })
     }
 
+    private fun checkForMovieRestoreChange() :Boolean {
+        var hasChanged = false
+        if (movieList.size != destroyedMovieList.size || destroyedMovieList.size == ZERO)
+            hasChanged = true
+        else {
+            for (pos in Common.ARRAY_FIRST..increaseOrDecreaseNumber(destroyedMovieList.size,false)) {
+                if (movieList[pos].movieID != destroyedMovieList[pos].movieID)
+                    hasChanged = true
+            }
+        }
+        return hasChanged
+    }
+
     private fun initViews() {
         Common.setRVLayout(requireContext(), rvMoviesSearch, resources)
-        rvMoviesSearch.adapter = Common.setRVAdapter(movieList, { movieItem -> onMovieClick(movieItem) })
+        movieAdapter = Common.setRVAdapter(movieList, { movieItem -> onMovieClick(movieItem) })
+        rvMoviesSearch.adapter = movieAdapter
         etYear1.setOnEditorActionListener(setEditTextActionListener(this::setCorrectYearDifference))
         etYear2.setOnEditorActionListener(setEditTextActionListener(this::setCorrectYearDifference))
         etPage.setOnEditorActionListener(setEditTextActionListener(this::onPageTextDone))
@@ -114,11 +134,11 @@ class MovieSearchFragment : Fragment() {
         ddSortByMain.adapter = setSpinnerAdapter(sortOptions.toList())
         ddSortByDirection.adapter = setSpinnerAdapter(sortDirections.toList())
         ddSortByYear.adapter = setSpinnerAdapter(sortByYearOptions.toList())
-        ddCatPrimary.onItemSelectedListener = initSpinner(this::onPrimaryCatItemSelect)
-        ddCatSecondary.onItemSelectedListener = initSpinner()
-        ddSortByMain.onItemSelectedListener = initSpinner()
-        ddSortByDirection.onItemSelectedListener = initSpinner()
-        ddSortByYear.onItemSelectedListener = initSpinner(this::onSortByYearItemSelect)
+        ddCatPrimary.onItemSelectedListener = initSpinner("PRI", this::onPrimaryCatItemSelect)
+        ddCatSecondary.onItemSelectedListener = initSpinner("SEC")
+        ddSortByMain.onItemSelectedListener = initSpinner("MAIN")
+        ddSortByDirection.onItemSelectedListener = initSpinner("DIR")
+        ddSortByYear.onItemSelectedListener = initSpinner("YEAR", this::onSortByYearItemSelect)
         if (restoreFromDestroyed) {
             ddCatPrimary.setSelection(catPriSelected)
             ddSortByMain.setSelection(sortByMainSelected)
@@ -131,7 +151,7 @@ class MovieSearchFragment : Fragment() {
         }
     }
 
-    private fun initSpinner(onSelect: ((pos: Int) -> Unit)? = null): AdapterView.OnItemSelectedListener {
+    private fun initSpinner(debug: String, onSelect: ((pos: Int) -> Unit)? = null): AdapterView.OnItemSelectedListener {
         return object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(parent: AdapterView<*>?) {
             }
@@ -144,6 +164,7 @@ class MovieSearchFragment : Fragment() {
             ) {
                 if (onSelect != null)
                     onSelect(position)
+                Log.i("sgdgdsgds", debug)
                 categoriesChanged()
             }
         }
@@ -175,8 +196,9 @@ class MovieSearchFragment : Fragment() {
                     pos = sel
             }
         }
-        if (restoreFromDestroyed)
+        if (restoreFromDestroyed) {
             pos = catSecSelected
+        }
         ddCatSecondary.adapter = setSpinnerAdapter(secCategories)
         ddCatSecondary.setSelection(pos)
     }
@@ -258,6 +280,7 @@ class MovieSearchFragment : Fragment() {
         yearOne = etYear1.text.toString()
         yearTwo = etYear2.text.toString()
         restoreFromDestroyed = true
+        destroyedMovieList = movieList
         super.onDestroyView()
     }
 
@@ -473,6 +496,7 @@ class MovieSearchFragment : Fragment() {
     //endregion
 
     companion object {
+        private var destroyedMovieList = arrayListOf<MovieItemSearch>()
         private var catSecSelected = 0
         private var catPriSelected = 0
         private var sortByMainSelected = 0
