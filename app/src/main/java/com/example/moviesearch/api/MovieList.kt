@@ -6,6 +6,6 @@ class MovieList(
     private var results: JsonArray,
     private var total_pages: String
 ) {
-    fun getResults(): JsonArray = results
-    fun getAmountOfPages(): String = total_pages
+    fun getResultsAPI(): JsonArray = results
+    fun getAmountOfPagesAPI(): String = total_pages
 }

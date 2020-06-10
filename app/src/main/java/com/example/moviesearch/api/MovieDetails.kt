@@ -29,6 +29,11 @@ class MovieDetails (
     fun getRevenue(): String = revenue
     fun getRuntime(): String = runtime
     fun getRating(): String = vote_average
-    fun getTrailers(): JsonArray = videos.get("results").asJsonArray
-    fun getCast(): JsonArray = credits.get("cast").asJsonArray
+    fun getTrailers(): JsonArray = videos.get(JSON_RESULTS).asJsonArray
+    fun getCast(): JsonArray = credits.get(JSON_CAST).asJsonArray
+
+    companion object {
+        private const val JSON_RESULTS = "results"
+        private const val JSON_CAST = "cast"
+    }
 }

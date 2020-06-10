@@ -29,7 +29,7 @@
     </fragment>
     <fragment
         android:id="@+id/detailsFragment"
-        android:name="com.example.moviesearch.ui.DetailsFragment"
+        android:name="com.example.moviesearch.ui.MovieDetailsFragment"
         tools:layout="@layout/fragment_details">
         <argument
             android:name="movieID"

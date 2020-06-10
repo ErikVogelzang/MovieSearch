@@ -2,79 +2,43 @@ package com.example.moviesearch.common
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.drawable.Drawable
-import android.media.Image
 import android.util.Log
-import android.view.Menu
 import android.view.View
+import android.view.ViewTreeObserver
 import android.widget.ImageView
 import android.widget.ProgressBar
 import androidx.core.content.res.ResourcesCompat
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import com.example.moviesearch.R
+import com.example.moviesearch.model.MovieItemSearch
+import com.example.moviesearch.model.MovieViewModel
+import com.example.moviesearch.ui.MovieSearchAdapter
 import com.google.android.material.snackbar.Snackbar
-import java.util.*
-import androidx.coordinatorlayout.widget.CoordinatorLayout
-import kotlinx.android.synthetic.main.activity_main.view.*
-import kotlinx.android.synthetic.main.content_main.view.*
 
+//This class contains functions and constants that are used by multiple other classes.
 
 class Common {
     companion object {
-        /*var catSecSelected = 0
-        var catPriSelected = 0
-        var sortBySelected = 0
-        var searchFragmentDestroyed = false
-        */
-        var savedMoviesNum = 0
-        var maxPages = 1
-        const val DEFAULT_SPAN_COUNT = 1
-        const val BASE_URL_SEARCH = "https://api.themoviedb.org/3/discover/"
-        const val BASE_QUERY_SEARCH = "movie?"
-        const val BASE_URL_DETAILS = "https://api.themoviedb.org/3/movie/"
-        const val KEY_QUERY = "api_key"
-        const val LANG_QUERY = "language"
-        const val SORT_QUERY = "sort_by"
-        const val ADULT_QUERY = "include_adult"
-        const val VIDEO_QUERY = "include_video"
-        const val PAGE_QUERY = "page"
-        const val YEAR_GTE_QUERY = "primary_release_date.gte"
-        const val YEAR_LTE_QUERY = "primary_release_date.lte"
-        const val GENRES_QUERY = "with_genres"
-        const val APPEND_QUERRY = "append_to_response"
         const val STRING_EMPTY = ""
-        const val STRING_DOT = "."
-        const val STRING_GT = ">"
-        const val STRING_GTE = ">="
-        const val STRING_LTE = "<="
-        const val STRING_EQUAL = "="
-        const val STRING_LT = "<"
-        const val STRING_GTLT = "> <"
-        const val STRING_GTELTE = ">= <="
-        const val STRING_QUOTE = "\""
-        const val BASE_IMAGE_URL = "https://image.tmdb.org/t/p/w500/"
-        const val BASE_IMDB_URL = "https://www.imdb.com/title/"
-        const val DEFAULT_LANG = "en-US"
-        const val EXTRA_APPEND_VAL = "videos,credits"
-        const val DEFAULT_PAGE_MOVIES = 20
-        const val MOVIE_START_COUNTER = 1
-        const val JSON_POSTER = "poster_path"
-        const val JSON_ID = "id"
-        const val JSON_TITLE = "title"
-        const val YEAR_END = "-12-31"
-        const val YEAR_START = "-01-01"
-
-
+        private const val BASE_IMAGE_URL = "https://image.tmdb.org/t/p/w500/"
+        private const val DEFAULT_GRID_SPAN_COUNT = 1
+        const val ARRAY_FIRST = 0
+        private const val JSON_NULL = "null"
+        private const val JSON_BAD_INT = "0"
+        private const val JSON_BAD_DOUBLE = "0.0"
 
         fun checkForValidJSonReturn(value: String) : Boolean {
             return when(value){
                 STRING_EMPTY -> false
-                "0" -> false
-                "null" -> false
-                "0.0" -> false
+                JSON_BAD_INT -> false
+                JSON_NULL -> false
+                JSON_BAD_DOUBLE -> false
                 else -> true
             }
         }
@@ -121,6 +85,41 @@ class Common {
                 })
             snack.show()
             return snack
+        }
+
+        fun setRVLayout(context: Context, rv: RecyclerView, res: Resources) {
+            val gridLayoutManager = GridLayoutManager(context, DEFAULT_GRID_SPAN_COUNT,
+                RecyclerView.VERTICAL, false)
+            rv.layoutManager = gridLayoutManager
+
+
+            rv.viewTreeObserver.addOnGlobalLayoutListener(object :
+                ViewTreeObserver.OnGlobalLayoutListener {
+                override fun onGlobalLayout() {
+                    rv.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                    gridLayoutManager.spanCount = calculateSpanCount(rv, res)
+                    gridLayoutManager.requestLayout()
+                }
+            })
+        }
+
+        private fun calculateSpanCount(rv: RecyclerView, res: Resources): Int{
+            val viewWidth = rv.measuredWidth
+            val moviePosterWidth = res.getDimension(R.dimen.poster_width)
+            val moviePosterMargin = res.getDimension(R.dimen.margin_medium)
+            val spanCount = Math.floor((viewWidth / (moviePosterWidth +
+                    moviePosterMargin)).toDouble()).toInt()
+            return if (spanCount >= DEFAULT_GRID_SPAN_COUNT) spanCount else DEFAULT_GRID_SPAN_COUNT
+        }
+
+        fun setRVAdapter(movieList: List<MovieItemSearch>, onMovieClick: (MovieItemSearch) -> Unit) : MovieSearchAdapter {
+            return MovieSearchAdapter(
+                movieList,
+                { movieItem -> onMovieClick(movieItem) })
+        }
+
+        fun onUndo(vm: MovieViewModel) {
+            vm.restoreLastAction()
         }
     }
 }

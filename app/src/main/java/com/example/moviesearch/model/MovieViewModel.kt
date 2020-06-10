@@ -8,93 +8,128 @@ import androidx.lifecycle.ViewModel
 import com.example.moviesearch.api.MovieDetails
 import com.example.moviesearch.common.Common
 import com.example.moviesearch.database.MovieRepository
+import com.example.moviesearch.ui.MovieSearchAdapter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class MovieViewModel(application: Application) : AndroidViewModel(application) {
+
+    //region Initialization
+
     private val movieRepository = MovieRepository(application.applicationContext)
     private var movieChangedList = arrayListOf<MovieSaved>()
     private val mainScope = CoroutineScope(Dispatchers.Main)
+    private var movieSavedList = movieRepository.getMoviesLocal()
 
-    var movieSavedList = movieRepository.getAllSavedMovies()
+    //endregion
 
-    fun getMoviesSearch(genres: String, sortBy: String, apiKey: String, yearGte: String, yearLte: String, page: Int){
-        movieRepository.setMovieList(genres, sortBy, apiKey, yearGte, yearLte, page)
+    //region API Functions
+
+    fun fetchMoviesAPI(genres: String, sortBy: String, apiKey: String, yearGte: String, yearLte: String, page: Int){
+        movieRepository.fetchMovieListAPI(genres, sortBy, apiKey, yearGte, yearLte, page)
     }
 
-    fun getMovieDetails(id: String, apiKey: String){
-        movieRepository.setMovieDetails(id, apiKey)
+    fun fetchMovieDetailsAPI(id: String, apiKey: String){
+        movieRepository.fetchMovieDetailsAPI(id, apiKey)
     }
 
-    fun getMovieListLiveData(): LiveData<List<MovieItemSearch>> {
-        return movieRepository.getMovieList()
+    fun getMoviesApi(): LiveData<List<MovieItemSearch>> {
+        return movieRepository.getMoviesAPI()
     }
 
-    fun getMovieDetailsLiveData(): LiveData<MovieItemDetails> {
-        return movieRepository.getMovieDetails()
-    }
+    //endregion
 
-    fun clearMovieDetails() {
-        movieRepository.clearMovieDetails()
-    }
+    //region Database functions
 
-    fun saveMovie(movie: MovieSaved, undo: Boolean = false) {
+    fun saveMovieLocal(movie: MovieSaved, undo: Boolean = false) {
         mainScope.launch {
             if (!undo) {
                 movieChangedList.clear()
                 movieChangedList.add(movie)
+                lastAction = ACTION_SAVE_ONE
             }
             withContext(Dispatchers.IO) {
-                movieRepository.saveMovie(movie)
+                movieRepository.saveMovieLocal(movie)
             }
         }
     }
 
-    fun deleteAllSavedMovies(undo: Boolean = false) {
-        if (!undo) {
-            movieChangedList.clear()
-            for (movie in movieSavedList.value!!.iterator()) {
-                movieChangedList.add(movie)
-            }
-        }
-        mainScope.launch {
-            withContext(Dispatchers.IO) {
-                movieRepository.deleteAllSavedMovies()
-            }
-        }
-    }
-
-    fun deleteSavedMovie(movie: MovieSaved, undo: Boolean = false) {
+    fun deleteMoviesLocal(undo: Boolean = false) {
         if (!undo) {
             movieChangedList.clear()
             for (movieSaved in movieSavedList.value!!.iterator()) {
                 movieChangedList.add(movieSaved)
             }
+            lastAction = ACTION_DELETE_ALL
         }
         mainScope.launch {
             withContext(Dispatchers.IO) {
-                movieRepository.deleteSavedMovie(movie)
+                movieRepository.deleteMoviesLocal()
             }
         }
     }
 
-    fun refreshSavedMovies() {
-        movieChangedList.clear()
-        for (movie in movieSavedList.value!!.iterator()) {
-            movieChangedList.add(movie)
+    fun deleteMovieLocal(movie: MovieSaved, undo: Boolean = false) {
+        if (!undo) {
+            movieChangedList.clear()
+            for (movieSaved in movieSavedList.value!!.iterator()) {
+                movieChangedList.add(movieSaved)
+            }
+            lastAction = ACTION_DELETE_ONE
         }
-        deleteAllSavedMovies()
-        for (movie in movieChangedList) {
-            saveMovie(movie)
+        mainScope.launch {
+            withContext(Dispatchers.IO) {
+                movieRepository.deleteMovieLocal(movie)
+            }
         }
     }
 
+    fun getMoviesLocal(): LiveData<List<MovieSaved>> = movieSavedList
 
-    fun getAllSavedMovies(): LiveData<List<MovieSaved>> = movieSavedList
+    fun fetchMovieDetailsLocal(id: String) = movieRepository.fetchMovieDetailsLocal(id)
 
-    fun getChangedMovies(): List<MovieSaved> = movieChangedList
+    fun isMovieLocal(id: String): Boolean = movieRepository.isMovieLocal(id)
 
-    fun loadMovieWithID(id: String): LiveData<MovieSaved> = movieRepository.loadMovieWithID(id)
+    //endregion
+
+    //region Functions For Both Data Sources
+
+    fun getMovieDetails(): LiveData<MovieItemDetails> {
+        return movieRepository.getMovieDetails()
+    }
+
+    fun getMaxPages(): Int = movieRepository.getMaxPages()
+
+    fun restoreLastAction() {
+        when(lastAction) {
+            ACTION_SAVE_ONE -> deleteMovieLocal(movieChangedList[Common.ARRAY_FIRST], true)
+            ACTION_DELETE_ONE -> {
+                mainScope.launch {
+                    withContext(Dispatchers.IO) {
+                        movieRepository.deleteMoviesLocal()
+                        for (movie in movieChangedList) {
+                            movieRepository.saveMovieLocal(movie)
+                        }
+                    }
+                }
+            }
+            ACTION_DELETE_ALL -> {
+                for (movie in movieChangedList) {
+                    saveMovieLocal(movie, true)
+                }
+            }
+        }
+    }
+
+    companion object {
+        private const val ACTION_NONE = "NONE"
+        private const val ACTION_DELETE_ALL = "DEL_ALL"
+        private const val ACTION_DELETE_ONE = "DEL_ONE"
+        private const val ACTION_SAVE_ONE = "SAVE"
+        private var lastAction = ACTION_NONE
+    }
+
+    //endregion
 }

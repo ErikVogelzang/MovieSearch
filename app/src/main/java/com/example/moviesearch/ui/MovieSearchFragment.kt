@@ -9,8 +9,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.example.moviesearch.R
 import com.example.moviesearch.common.Common
 import com.example.moviesearch.model.MovieItemSearch
@@ -18,122 +16,95 @@ import com.example.moviesearch.model.MovieViewModel
 import kotlinx.android.synthetic.main.fragment_movie_search.*
 import kotlin.collections.ArrayList
 import android.content.Context.INPUT_METHOD_SERVICE
-import android.util.Log
 import android.view.inputmethod.InputMethodManager
 import com.example.moviesearch.model.SearchTextState
 
 
-/**
- * A simple [Fragment] subclass.
- */
 class MovieSearchFragment : Fragment() {
+
+    //region Initialization
+
     private  var lastTextState = SearchTextState()
     private  var currentTextState = SearchTextState()
-    private lateinit var movieListViewModel: MovieViewModel
+    private lateinit var movieViewModel: MovieViewModel
     private val movieList = arrayListOf<MovieItemSearch>()
-    private lateinit var movieSearchAdapter: MovieSearchAdapter
 
     private val categories = arrayOf (
-        "Select primary genre",
-        "Action",
-        "Adventure",
-        "Animation",
-        "Comedy",
-        "Crime",
-        "Documentary",
-        "Drama",
-        "Family",
-        "Fantasy",
-        "History",
-        "Horror",
-        "Music",
-        "Mystery",
-        "Romance",
-        "Science Fiction",
-        "TV Movie",
-        "Thriller",
-        "War",
-        "Western"
+        PRI_CAT_START_TEXT,
+        CAT_NAME_ACT,
+        CAT_NAME_ADV,
+        CAT_NAME_ANI,
+        CAT_NAME_COM,
+        CAT_NAME_CRI,
+        CAT_NAME_DOC,
+        CAT_NAME_DRAMA,
+        CAT_NAME_FAM,
+        CAT_NAME_FAN,
+        CAT_NAME_HIS,
+        CAT_NAME_HOR,
+        CAT_NAME_MUS,
+        CAT_NAME_MYS,
+        CAT_NAME_ROM,
+        CAT_NAME_SCIFI,
+        CAT_NAME_TV,
+        CAT_NAME_THR,
+        CAT_NAME_WAR,
+        CAT_NAME_WES
     )
 
     private val sortOptions = arrayOf (
-        "Select how to sort",
-        "Popularity",
-        "Release",
-        "Revenue",
-        "Title",
-        "Score",
-        "Vote Count"
+        SORT_MAIN_START_TEXT,
+        SORT_MAIN_POP,
+        SORT_MAIN_REL,
+        SORT_MAIN_REV,
+        SORT_MAIN_TI,
+        SORT_MAIN_SCO,
+        SORT_MAIN_VC
     )
 
     private val sortDirections = arrayOf (
-        "Descending",
-        "Ascending"
+        SORT_DIR_DESC,
+        SORT_DIR_ASC
     )
 
     private val sortByYearOptions = arrayOf (
-        Common.STRING_GTE,
-        Common.STRING_GT,
-        Common.STRING_LTE,
-        Common.STRING_LT,
-        Common.STRING_EQUAL,
-        Common.STRING_GTLT,
-        Common.STRING_GTELTE
+        STRING_GTE,
+        STRING_GT,
+        STRING_LTE,
+        STRING_LT,
+        STRING_EQUAL,
+        STRING_GTLT,
+        STRING_GTELTE
     )
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_movie_search, container, false)
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        initViews()
-    }
-
     private fun initViewModel() {
-        movieListViewModel = ViewModelProvider(requireActivity()).get(MovieViewModel::class.java)
-        movieListViewModel.getMovieListLiveData().observe(this.viewLifecycleOwner, Observer {
-            movieList.clear()
-            movieList.addAll(it)
-            assignMovieAdapter()
-            if (movieList.size == 0) {
-                btnPrev.visibility = View.GONE
-                etPage.visibility = View.GONE
-                btnNext.visibility = View.GONE
-            }
-            else {
-                btnPrev.visibility = View.VISIBLE
-                etPage.visibility = View.VISIBLE
-                btnNext.visibility = View.VISIBLE
-            }
+        movieViewModel = ViewModelProvider(requireActivity()).get(MovieViewModel::class.java)
+        movieViewModel.getMoviesApi().observe(this.viewLifecycleOwner, Observer {
+            if (it != null) {
+                rvMoviesSearch.visibility = View.VISIBLE
 
+                movieList.clear()
+                movieList.addAll(it)
+                rvMoviesSearch.adapter = Common.setRVAdapter(movieList, { movieItem -> onMovieClick(movieItem) })
+                maxPages = movieViewModel.getMaxPages()
+                if (movieList.isEmpty()) {
+                    btnPrev.visibility = View.GONE
+                    etPage.visibility = View.GONE
+                    btnNext.visibility = View.GONE
+                } else {
+                    btnPrev.visibility = View.VISIBLE
+                    etPage.visibility = View.VISIBLE
+                    btnNext.visibility = View.VISIBLE
+                }
+            }
+            else
+                rvMoviesSearch.visibility = View.INVISIBLE
         })
-    }
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        initViewModel()
     }
 
     private fun initViews() {
-        val gridLayoutManager = GridLayoutManager(requireActivity(), Common.DEFAULT_SPAN_COUNT,
-            RecyclerView.VERTICAL, false)
-        rvMoviesSearch.layoutManager = gridLayoutManager
-
-
-        rvMoviesSearch.viewTreeObserver.addOnGlobalLayoutListener(object :
-            ViewTreeObserver.OnGlobalLayoutListener {
-            override fun onGlobalLayout() {
-                rvMoviesSearch.viewTreeObserver.removeOnGlobalLayoutListener(this)
-                gridLayoutManager.spanCount = calculateSpanCount()
-                gridLayoutManager.requestLayout()
-            }
-        })
-        assignMovieAdapter()
+        Common.setRVLayout(requireContext(), rvMoviesSearch, resources)
+        rvMoviesSearch.adapter = Common.setRVAdapter(movieList, { movieItem -> onMovieClick(movieItem) })
         etYear1.setOnEditorActionListener(setEditTextActionListener(this::setCorrectYearDifference))
         etYear2.setOnEditorActionListener(setEditTextActionListener(this::setCorrectYearDifference))
         etPage.setOnEditorActionListener(setEditTextActionListener(this::onPageTextDone))
@@ -179,7 +150,7 @@ class MovieSearchFragment : Fragment() {
     }
 
     private fun setSecondaryCategories(primarySelection: String, restored: Boolean) {
-        var pos = 0
+        var pos = Common.ARRAY_FIRST
         if (ddCatSecondary.selectedItem != null) {
             if (ddCatSecondary.selectedItem.toString() != primarySelection) {
                 pos = ddCatSecondary.selectedItemPosition
@@ -193,13 +164,13 @@ class MovieSearchFragment : Fragment() {
                 if (passedFirst)
                     secCategories.add(sel)
                 else {
-                    secCategories.add("Select secondary genre")
+                    secCategories.add(SEC_CAT_START_TEXT)
                     passedFirst = true
                 }
             }
         }
         if (ddCatSecondary.selectedItem != null) {
-            for (sel in 0 until (secCategories.size-1)) {
+            for (sel in Common.ARRAY_FIRST until (increaseOrDecreaseNumber(secCategories.size, false))) {
                 if (secCategories[sel] == ddCatSecondary.selectedItem.toString())
                     pos = sel
             }
@@ -213,53 +184,7 @@ class MovieSearchFragment : Fragment() {
     private fun onMovieClick(movieItem: MovieItemSearch) {
         if (movieItem.loading)
             return
-        val action = MovieSearchFragmentDirections.actionMovieSearchFragmentToDetailsFragment(movieItem.movieID.toInt(), movieItem.posterPath)
-        findNavController().navigate(action)
-    }
-
-    private fun fetchMovies() {
-        if (ddCatPrimary.selectedItemPosition == 0 || ddSortByMain.selectedItemPosition == 0)
-            return
-        movieListViewModel.getMoviesSearch(getGenreQuery(), getsortByQuery(), getString(R.string.movie_db_api_key), getYearGteQuery(), getYearLteQuery(), etPage.text.toString().toInt())
-    }
-
-    private fun calculateSpanCount(): Int{
-        val viewWidth = rvMoviesSearch.measuredWidth
-        val moviePosterWidth = resources.getDimension(R.dimen.poster_width)
-        val moviePosterMargin = resources.getDimension(R.dimen.margin_medium)
-        val spanCount = Math.floor((viewWidth / (moviePosterWidth +
-                moviePosterMargin)).toDouble()).toInt()
-        return if (spanCount >= Common.DEFAULT_SPAN_COUNT) spanCount else Common.DEFAULT_SPAN_COUNT
-    }
-
-    override fun onViewStateRestored(savedInstanceState: Bundle?) {
-        setSecondaryCategories(ddCatPrimary.selectedItem.toString(), true)
-        super.onViewStateRestored(savedInstanceState)
-    }
-
-    private fun getGenreID(genre: String) : String {
-        return when (genre) {
-            "Action" -> "28"
-            "Adventure" -> "12"
-            "Animation" -> "16"
-            "Comedy" -> "35"
-            "Crime" -> "80"
-            "Documentary" -> "99"
-            "Drama" -> "18"
-            "Family" -> "10751"
-            "Fantasy" -> "14"
-            "History" -> "36"
-            "Horror" -> "27"
-            "Music" -> "10402"
-            "Mystery" -> "9648"
-            "Romance" -> "10749"
-            "Science Fiction" -> "878"
-            "TV Movie" -> "10770"
-            "Thriller" -> "53"
-            "War" -> "37"
-            "Western" -> "10752"
-            else -> Common.STRING_EMPTY
-        }
+        findNavController().navigate(MovieSearchFragmentDirections.actionMovieSearchFragmentToDetailsFragment(movieItem.movieID.toInt(), movieItem.posterPath))
     }
 
     private fun setSpinnerAdapter(list: List<String>): ArrayAdapter<String> {
@@ -268,96 +193,6 @@ class MovieSearchFragment : Fragment() {
             android.R.layout.simple_spinner_dropdown_item,
             list
         )
-    }
-
-    private fun getGenreQuery() : String {
-        val primary = getGenreID(ddCatPrimary.selectedItem.toString())
-        val secondary = getGenreID(ddCatSecondary.selectedItem.toString())
-        if (primary == Common.STRING_EMPTY)
-            return Common.STRING_EMPTY
-        if (secondary == Common.STRING_EMPTY)
-            return primary
-        else
-            return primary.plus(", ").plus(secondary)
-    }
-
-    private fun getsortByQuery() : String {
-        var str = ddSortByMain.selectedItem.toString()
-        when (str) {
-            "Release" -> str = "primary_release_date"
-            "Title" -> str = "original_title"
-            "Score" -> str = "vote_average"
-            "Vote Count" -> str = "vote_count"
-            else -> str = str.toLowerCase()
-        }
-        when (ddSortByDirection.selectedItem.toString()) {
-            "Ascending" -> str = str.plus(".asc")
-            "Descending" -> str = str.plus(".desc")
-        }
-        return str
-    }
-
-    private fun onPrimaryCatItemSelect(pos: Int) {
-        if (pos != 0)
-            setSecondaryCategories(ddCatPrimary.getItemAtPosition(pos).toString(), false)
-        else
-            ddCatSecondary.adapter = setSpinnerAdapter(listOf())
-    }
-
-    private fun onSortByYearItemSelect(pos: Int) {
-        val item = ddSortByYear.selectedItem.toString()
-        if (item == Common.STRING_GTELTE || item == Common.STRING_GTLT) {
-            etYear2.visibility = View.VISIBLE
-            setCorrectYearDifference()
-        }
-        else
-            etYear2.visibility = View.GONE
-    }
-
-    private fun assignMovieAdapter() {
-        movieSearchAdapter = MovieSearchAdapter(
-            movieList,
-            { movieItem -> onMovieClick(movieItem) })
-        rvMoviesSearch.adapter = movieSearchAdapter
-    }
-
-    private fun getYearGteQuery(): String {
-        val filter = ddSortByYear.selectedItem.toString()
-        val year = etYear1.text.toString()
-        if (filter != Common.STRING_LTE && filter != Common.STRING_LT) {
-            if (filter == Common.STRING_GT || filter == Common.STRING_GTLT)
-                return getYearFormatted(increaseOrDecreaseStringNumber(year, true), true)
-            return getYearFormatted(year, true)
-        }
-        return Common.STRING_EMPTY
-    }
-
-    private fun getYearLteQuery(): String {
-        val filter = ddSortByYear.selectedItem.toString()
-        val year1 = etYear1.text.toString()
-
-        if (filter == Common.STRING_LTE || filter == Common.STRING_EQUAL)
-            return getYearFormatted(year1, false)
-
-        val year2 = etYear2.text.toString()
-        return when(filter) {
-            Common.STRING_GTLT -> getYearFormatted(increaseOrDecreaseStringNumber(year2, false), false)
-            Common.STRING_LT -> getYearFormatted(increaseOrDecreaseStringNumber(year1, false), false)
-            Common.STRING_GTELTE -> getYearFormatted(year2, false)
-            else -> Common.STRING_EMPTY
-        }
-    }
-
-    private fun getYearFormatted(year: String, isHigherThan: Boolean) : String {
-        var newYear = year
-        if (year.length != 4)
-            newYear = "1895"
-        if (year == Common.STRING_EMPTY)
-            return Common.STRING_EMPTY
-        if (isHigherThan)
-            return newYear + Common.YEAR_START
-        else
-            return newYear + Common.YEAR_END
     }
 
     private fun setEditTextActionListener(onDone: (() -> Unit)): TextView.OnEditorActionListener {
@@ -378,29 +213,6 @@ class MovieSearchFragment : Fragment() {
         }
     }
 
-    private fun increaseOrDecreaseStringNumber(number: String, increase: Boolean, multiplyBy: Int = 1) : String {
-        val newNumber = number.toIntOrNull()
-        if (newNumber == null)
-            return Common.STRING_EMPTY
-        return when(increase) {
-            true -> (newNumber+(1*multiplyBy)).toString()
-            else -> (newNumber-(1*multiplyBy)).toString()
-        }
-    }
-
-    private fun onPageTextDone() {
-        var pageNumber = etPage.text.toString().toIntOrNull()
-        if (pageNumber == null || pageNumber == 0) {
-            pageNumber = 1
-        }
-        else if (pageNumber > Common.maxPages) {
-            pageNumber = Common.maxPages
-        }
-        etPage.setText(pageNumber.toString())
-        restoreFromDestroyed = false
-        updateTextState()
-    }
-
     private fun setBtnOnClick(onClick: (() -> Unit)? = null): View.OnClickListener {
         return View.OnClickListener {
             if (onClick != null)
@@ -409,8 +221,197 @@ class MovieSearchFragment : Fragment() {
         }
     }
 
+    //endregion
+
+    //region Android Lifecycle Functions
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        // Inflate the layout for this fragment
+        return inflater.inflate(R.layout.fragment_movie_search, container, false)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        initViews()
+    }
+
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+        initViewModel()
+    }
+
+    override fun onViewStateRestored(savedInstanceState: Bundle?) {
+        setSecondaryCategories(ddCatPrimary.selectedItem.toString(), true)
+        super.onViewStateRestored(savedInstanceState)
+    }
+
+    override fun onDestroyView() {
+        catPriSelected = ddCatPrimary.selectedItemPosition
+        catSecSelected = ddCatSecondary.selectedItemPosition
+        sortByMainSelected = ddSortByMain.selectedItemPosition
+        sortByYearSelected = ddSortByYear.selectedItemPosition
+        sortByDirSelected = ddSortByDirection.selectedItemPosition
+        page = etPage.text.toString()
+        yearOne = etYear1.text.toString()
+        yearTwo = etYear2.text.toString()
+        restoreFromDestroyed = true
+        super.onDestroyView()
+    }
+
+    //endregion
+
+    //region API Functions
+
+    private fun fetchMovies() {
+        if (ddCatPrimary.selectedItemPosition == Common.ARRAY_FIRST || ddSortByMain.selectedItemPosition == Common.ARRAY_FIRST)
+            return
+        movieViewModel.fetchMoviesAPI(getGenreQuery(), getSortByQuery(), getString(R.string.movie_db_api_key), getYearGteQuery(), getYearLteQuery(), etPage.text.toString().toInt())
+    }
+
+    private fun getGenreID(genre: String) : String {
+        return when (genre) {
+            CAT_NAME_ACT -> CAT_ID_ACT
+            CAT_NAME_ADV -> CAT_ID_ADV
+            CAT_NAME_ANI -> CAT_ID_ANI
+            CAT_NAME_COM -> CAT_ID_COM
+            CAT_NAME_CRI -> CAT_ID_CRI
+            CAT_NAME_DOC -> CAT_ID_DOC
+            CAT_NAME_DRAMA -> CAT_ID_DRAMA
+            CAT_NAME_FAM -> CAT_ID_FAM
+            CAT_NAME_FAN -> CAT_ID_FAN
+            CAT_NAME_HIS -> CAT_ID_HIS
+            CAT_NAME_HOR -> CAT_ID_HOR
+            CAT_NAME_MUS -> CAT_ID_MUS
+            CAT_NAME_MYS -> CAT_ID_MYS
+            CAT_NAME_ROM -> CAT_ID_ROM
+            CAT_NAME_SCIFI -> CAT_ID_SCIFI
+            CAT_NAME_TV -> CAT_ID_TV
+            CAT_NAME_THR -> CAT_ID_THR
+            CAT_NAME_WAR -> CAT_ID_WAR
+            CAT_NAME_WES -> CAT_ID_WES
+            else -> Common.STRING_EMPTY
+        }
+    }
+
+    private fun getGenreQuery() : String {
+        val primary = getGenreID(ddCatPrimary.selectedItem.toString())
+        val secondary = getGenreID(ddCatSecondary.selectedItem.toString())
+        if (primary == Common.STRING_EMPTY)
+            return Common.STRING_EMPTY
+        if (secondary == Common.STRING_EMPTY)
+            return primary
+        else
+            return primary.plus(QUERY_GENRE_SPACING).plus(secondary)
+    }
+
+    private fun getSortByQuery() : String {
+        var str = ddSortByMain.selectedItem.toString()
+        when (str) {
+            SORT_MAIN_REL -> str = SORT_MAIN_REL_QUERY
+            SORT_MAIN_TI -> str = SORT_MAIN_TI_QUERY
+            SORT_MAIN_SCO -> str = SORT_MAIN_SCO_QUERY
+            SORT_MAIN_VC -> str = SORT_MAIN_VC_QUERY
+            else -> str = str.toLowerCase()
+        }
+        when (ddSortByDirection.selectedItem.toString()) {
+            SORT_DIR_ASC -> str = str.plus(SORT_DIR_ASC_QUERY)
+            SORT_DIR_DESC -> str = str.plus(SORT_DIR_DESC_QUERY)
+        }
+        return str
+    }
+
+    private fun getYearGteQuery(): String {
+        val filter = ddSortByYear.selectedItem.toString()
+        val year = etYear1.text.toString()
+        if (filter != STRING_LTE && filter != STRING_LT) {
+            if (filter == STRING_GT || filter == STRING_GTLT)
+                return getYearFormatted(increaseOrDecreaseStringNumber(year, true), true)
+            return getYearFormatted(year, true)
+        }
+        return Common.STRING_EMPTY
+    }
+
+    private fun getYearLteQuery(): String {
+        val filter = ddSortByYear.selectedItem.toString()
+        val year1 = etYear1.text.toString()
+
+        if (filter == STRING_LTE || filter == STRING_EQUAL)
+            return getYearFormatted(year1, false)
+
+        val year2 = etYear2.text.toString()
+        return when(filter) {
+            STRING_GTLT -> getYearFormatted(increaseOrDecreaseStringNumber(year2, false), false)
+            STRING_LT -> getYearFormatted(increaseOrDecreaseStringNumber(year1, false), false)
+            STRING_GTELTE -> getYearFormatted(year2, false)
+            else -> Common.STRING_EMPTY
+        }
+    }
+
+    private fun getYearFormatted(year: String, isHigherThan: Boolean) : String {
+        var newYear = year
+        if (year.length != ACCEPTED_YEAR_LENGTH)
+            newYear = LOWEST_ACCEPTED_YEAR
+        if (year == Common.STRING_EMPTY)
+            return Common.STRING_EMPTY
+        if (isHigherThan)
+            return newYear + YEAR_START
+        else
+            return newYear + YEAR_END
+    }
+
+    //endregion
+
+    //region UI Functions
+
+    private fun onPrimaryCatItemSelect(pos: Int) {
+        if (pos != Common.ARRAY_FIRST)
+            setSecondaryCategories(ddCatPrimary.getItemAtPosition(pos).toString(), false)
+        else
+            ddCatSecondary.adapter = setSpinnerAdapter(listOf())
+    }
+
+    private fun onSortByYearItemSelect(pos: Int) {
+        val item = ddSortByYear.selectedItem.toString()
+        if (item == STRING_GTELTE || item == STRING_GTLT) {
+            etYear2.visibility = View.VISIBLE
+            setCorrectYearDifference()
+        }
+        else
+            etYear2.visibility = View.GONE
+    }
+
+    private fun increaseOrDecreaseStringNumber(number: String, increase: Boolean, amount: Int = ONE) : String {
+        val newNumber = number.toIntOrNull()
+        if (newNumber == null)
+            return Common.STRING_EMPTY
+        return increaseOrDecreaseNumber(newNumber, increase, amount).toString()
+    }
+
+    private fun increaseOrDecreaseNumber(number: Int, increase: Boolean, amount: Int = ONE): Int {
+        return when(increase) {
+            true -> number + amount
+            false -> number - amount
+        }
+    }
+
+    private fun onPageTextDone() {
+        var pageNumber = etPage.text.toString().toIntOrNull()
+        if (pageNumber == null || pageNumber == ZERO) {
+            pageNumber = ONE
+        }
+        else if (pageNumber > maxPages) {
+            pageNumber = maxPages
+        }
+        etPage.setText(pageNumber.toString())
+        restoreFromDestroyed = false
+        updateTextState()
+    }
+
     private fun onPrevBtnClick() {
-        if (etPage.text.toString().toInt() == 1)
+        if (etPage.text.toString().toInt() == ONE)
             return
         etPage.setText(increaseOrDecreaseStringNumber(etPage.text.toString(), false))
         updateTextState()
@@ -418,7 +419,7 @@ class MovieSearchFragment : Fragment() {
     }
 
     private fun onNextBtnClick() {
-        if (etPage.text.toString().toInt() == Common.maxPages)
+        if (etPage.text.toString().toInt() == maxPages)
             return
         etPage.setText(increaseOrDecreaseStringNumber(etPage.text.toString(), true))
         updateTextState()
@@ -426,9 +427,8 @@ class MovieSearchFragment : Fragment() {
     }
 
     private fun categoriesChanged(newCategories: Boolean = true) {
-        Log.i("gadsfsgsdgfsdds", etPage.text.toString())
         if (newCategories && !restoreFromDestroyed)
-            etPage.setText("1")
+            etPage.setText(ONE.toString())
         if (isTextStateChanged() || newCategories) {
             fetchMovies()
             updateTextState()
@@ -437,9 +437,8 @@ class MovieSearchFragment : Fragment() {
 
     private fun hideKeyboard(view: View) {
         val imm = requireContext().getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-        imm.hideSoftInputFromWindow(view.windowToken, 0)
+        imm.hideSoftInputFromWindow(view.windowToken, KEYBOARD_FLAGS)
     }
-
 
     private fun updateTextState() {
         lastTextState.yearOneText = currentTextState.yearOneText
@@ -461,29 +460,17 @@ class MovieSearchFragment : Fragment() {
     private fun setCorrectYearDifference() {
         val year1 = etYear1.text.toString().toIntOrNull()
         val year2 = etYear2.text.toString().toIntOrNull()
-        val gtltDifference = 2
         val filter = ddSortByYear.selectedItem.toString()
         if (year1 != null && year2 != null) {
-            if (filter == Common.STRING_GTELTE && year1 > year2)
+            if (filter == STRING_GTELTE && year1 > year2)
                 etYear2.setText(increaseOrDecreaseStringNumber(etYear1.text.toString(), true))
-            else if (filter == Common.STRING_GTLT && (year2-year1) < gtltDifference)
-                etYear2.setText(increaseOrDecreaseStringNumber(etYear1.text.toString(), true, gtltDifference))
+            else if (filter == STRING_GTLT && (year2-year1) < GT_LT_YEAR_DIFF)
+                etYear2.setText(increaseOrDecreaseStringNumber(etYear1.text.toString(), true, GT_LT_YEAR_DIFF))
         }
         updateTextState()
     }
 
-    override fun onDestroyView() {
-        catPriSelected = ddCatPrimary.selectedItemPosition
-        catSecSelected = ddCatSecondary.selectedItemPosition
-        sortByMainSelected = ddSortByMain.selectedItemPosition
-        sortByYearSelected = ddSortByYear.selectedItemPosition
-        sortByDirSelected = ddSortByDirection.selectedItemPosition
-        page = etPage.text.toString()
-        yearOne = etYear1.text.toString()
-        yearTwo = etYear2.text.toString()
-        restoreFromDestroyed = true
-        super.onDestroyView()
-    }
+    //endregion
 
     companion object {
         private var catSecSelected = 0
@@ -495,5 +482,77 @@ class MovieSearchFragment : Fragment() {
         private var yearTwo = Common.STRING_EMPTY
         private var page = Common.STRING_EMPTY
         private var restoreFromDestroyed = false
+        private var maxPages = 0
+        private const val ACCEPTED_YEAR_LENGTH = 4
+        private const val LOWEST_ACCEPTED_YEAR = "1895"
+        private const val STRING_GT = ">"
+        private const val STRING_GTE = ">="
+        private const val STRING_LTE = "<="
+        private const val STRING_EQUAL = "="
+        private const val STRING_LT = "<"
+        private const val STRING_GTLT = "> <"
+        private const val STRING_GTELTE = ">= <="
+        private const val YEAR_END = "-12-31"
+        private const val YEAR_START = "-01-01"
+        private const val PRI_CAT_START_TEXT = "Select primary genre"
+        private const val SEC_CAT_START_TEXT = "Select secondary genre"
+        private const val SORT_MAIN_START_TEXT = "Select how to sort"
+        private const val ONE = 1
+        private const val ZERO = 0
+        private const val CAT_NAME_ACT = "Action"
+        private const val CAT_NAME_ADV = "Adventure"
+        private const val CAT_NAME_ANI = "Animation"
+        private const val CAT_NAME_COM = "Comedy"
+        private const val CAT_NAME_CRI = "Crime"
+        private const val CAT_NAME_DOC = "Documentary"
+        private const val CAT_NAME_DRAMA = "Drama"
+        private const val CAT_NAME_FAM = "Family"
+        private const val CAT_NAME_FAN = "Fantasy"
+        private const val CAT_NAME_HIS = "History"
+        private const val CAT_NAME_HOR = "Horror"
+        private const val CAT_NAME_MUS = "Music"
+        private const val CAT_NAME_MYS = "Mystery"
+        private const val CAT_NAME_ROM = "Romance"
+        private const val CAT_NAME_SCIFI = "Science Fiction"
+        private const val CAT_NAME_TV = "TV Movie"
+        private const val CAT_NAME_THR = "Thriller"
+        private const val CAT_NAME_WAR = "War"
+        private const val CAT_NAME_WES = "Western"
+        private const val CAT_ID_ACT = "28"
+        private const val CAT_ID_ADV = "12"
+        private const val CAT_ID_ANI = "16"
+        private const val CAT_ID_COM = "35"
+        private const val CAT_ID_CRI = "80"
+        private const val CAT_ID_DOC = "99"
+        private const val CAT_ID_DRAMA = "18"
+        private const val CAT_ID_FAM = "10751"
+        private const val CAT_ID_FAN = "14"
+        private const val CAT_ID_HIS = "36"
+        private const val CAT_ID_HOR = "27"
+        private const val CAT_ID_MUS = "10402"
+        private const val CAT_ID_MYS = "9648"
+        private const val CAT_ID_ROM = "10749"
+        private const val CAT_ID_SCIFI = "878"
+        private const val CAT_ID_TV = "10770"
+        private const val CAT_ID_THR = "53"
+        private const val CAT_ID_WAR = "10752"
+        private const val CAT_ID_WES = "37"
+        private const val QUERY_GENRE_SPACING = ", "
+        private const val SORT_MAIN_POP = "Popularity"
+        private const val SORT_MAIN_REL = "Release"
+        private const val SORT_MAIN_REV = "Revenue"
+        private const val SORT_MAIN_TI = "Title"
+        private const val SORT_MAIN_SCO = "Score"
+        private const val SORT_MAIN_VC = "Vote Count"
+        private const val SORT_MAIN_REL_QUERY = "primary_release_date"
+        private const val SORT_MAIN_TI_QUERY = "original_title"
+        private const val SORT_MAIN_SCO_QUERY = "vote_average"
+        private const val SORT_MAIN_VC_QUERY = "vote_count"
+        private const val SORT_DIR_DESC = "Descending"
+        private const val SORT_DIR_ASC = "Ascending"
+        private const val SORT_DIR_ASC_QUERY = ".asc"
+        private const val SORT_DIR_DESC_QUERY = ".desc"
+        private const val KEYBOARD_FLAGS = 0
+        private const val GT_LT_YEAR_DIFF = 2
     }
 }

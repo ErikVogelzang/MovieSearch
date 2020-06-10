@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".ui.DetailsFragment">
+    tools:context=".ui.MovieDetailsFragment">
 
 
     <ImageView
@@ -101,12 +101,41 @@
                 android:layout_marginStart="350dp"
                 android:layout_marginTop="50dp"
                 android:requiresFadingEdge="horizontal|vertical"
-                android:visibility="visible"
+                android:visibility="invisible"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
 
             </WebView>
+
+            <ImageView
+                android:id="@+id/ivNoVideo"
+                android:layout_width="wrap_content"
+                android:layout_height="246dp"
+                android:layout_marginTop="5dp"
+                android:src="@drawable/no_trailer_loaded"
+                android:visibility="invisible"
+                app:layout_constraintBottom_toBottomOf="@id/wvVideo"
+                app:layout_constraintEnd_toEndOf="@id/wvVideo"
+                app:layout_constraintStart_toStartOf="@id/wvVideo"
+                app:layout_constraintTop_toTopOf="@id/wvVideo" />
+
+            <ProgressBar
+                android:id="@+id/pbVideo"
+                style="?android:attr/progressBarStyle"
+                android:layout_width="0dp"
+                android:layout_height="246dp"
+                android:layout_marginStart="120dp"
+                android:layout_marginTop="300dp"
+                android:layout_marginEnd="120dp"
+                android:layout_marginBottom="300dp"
+                android:indeterminate="false"
+                android:indeterminateTint="#000000"
+                android:visibility="invisible"
+                app:layout_constraintBottom_toBottomOf="@id/ivNoVideo"
+                app:layout_constraintEnd_toEndOf="@id/ivNoVideo"
+                app:layout_constraintStart_toStartOf="@id/ivNoVideo"
+                app:layout_constraintTop_toTopOf="@id/ivNoVideo" />
 
             <LinearLayout
                 android:id="@+id/llStats"
@@ -121,10 +150,10 @@
 
                 <TextView
                     android:id="@+id/tvTitle"
-                    android:layout_width="wrap_content"
+                    android:layout_width="336dp"
                     android:layout_height="wrap_content"
-                    android:text="Avengers"
-                    android:textAlignment="center"
+                    android:text="AvengersAvengersAvengersAvengersAvengersAvengers"
+                    android:textAlignment="viewStart"
                     android:textAllCaps="true"
                     android:textColor="@android:color/holo_blue_dark"
                     android:textSize="40sp"

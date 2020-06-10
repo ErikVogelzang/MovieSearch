@@ -23,10 +23,13 @@ import java.util.ArrayList
 
 class MovieRepository(context: Context) {
 
+    //region Initialization
+
     private val movieList = MutableLiveData<List<MovieItemSearch>>()
     private val movieSavedList: LiveData<List<MovieSaved>>
     private var movieDetails = MutableLiveData<MovieItemDetails>()
     private val movieDao: MovieDao
+    private var maxPages = 0
 
     init {
         val database = MovieRoomDatabase.getDatabase(context)
@@ -34,41 +37,27 @@ class MovieRepository(context: Context) {
         movieSavedList = movieDao.getAllMovies()
     }
 
-    private fun removeQuotes(str: String?): String {
-        if (str == null)
-            return Common.STRING_EMPTY
-        return str.replace(Common.STRING_QUOTE, Common.STRING_EMPTY)
-    }
+    //endregion
 
-    fun getMovieList(): LiveData<List<MovieItemSearch>> {
+    //region API Functions
+
+    fun getMoviesAPI(): LiveData<List<MovieItemSearch>> {
         return movieList
     }
 
-    fun getMovieDetails(): LiveData<MovieItemDetails> {
-        return movieDetails
-    }
-
-    private fun setMoviesLoadState() {
-        val moviesLoadState = ArrayList<MovieItemSearch>()
-        for (i in Common.MOVIE_START_COUNTER..Common.DEFAULT_PAGE_MOVIES) {
-            moviesLoadState.add(MovieItemSearch(Common.STRING_EMPTY, Common.STRING_EMPTY, Common.STRING_EMPTY, true))
-        }
-        movieList.value = moviesLoadState
-    }
-
-    fun setMovieList(genres: String, sortBy: String, apiKey: String, yearGte: String, yearLte: String, page: Int) {
+    fun fetchMovieListAPI(genres: String, sortBy: String, apiKey: String, yearGte: String, yearLte: String, page: Int) {
         setMoviesLoadState()
-
         val moviesFound = ArrayList<MovieItemSearch>()
 
         val retrofit = Retrofit.Builder()
-            .baseUrl(Common.BASE_URL_SEARCH)
+            .baseUrl(BASE_URL_SEARCH)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         val movieApi = retrofit.create(MovieApi::class.java)
-        val jsonCall = movieApi.getMovies(apiKey, Common.DEFAULT_LANG, sortBy, false, false, page, genres, yearGte, yearLte)
+        val jsonCall = movieApi.getMoviesAPI(apiKey, DEFAULT_LANG, sortBy, false, false, page, genres, yearGte, yearLte)
         jsonCall.enqueue(object: Callback<MovieList>{
             override fun onFailure(call: Call<MovieList>, t: Throwable) {
+                movieList.value = null
             }
 
             override fun onResponse(call: Call<MovieList>, response: Response<MovieList>) {
@@ -78,17 +67,17 @@ class MovieRepository(context: Context) {
                 var responseBody = response.body()
                 if (responseBody == null)
                     return
-                val maxPages = responseBody.getAmountOfPages().toIntOrNull()
+                val maxPages = responseBody.getAmountOfPagesAPI().toIntOrNull()
                 if (maxPages != null)
-                    Common.maxPages = maxPages
+                    this@MovieRepository.maxPages = maxPages
                 else
-                    Common.maxPages = 0
-                var results = responseBody.getResults()
+                    this@MovieRepository.maxPages = 0
+                var results = responseBody.getResultsAPI()
                 for (i in 0 until results.size()) {
                     var result = results.get(i)?.asJsonObject
-                    val posterPath = removeQuotes(result?.get(Common.JSON_POSTER).toString())
-                    val movieID = removeQuotes(result?.get(Common.JSON_ID).toString())
-                    val title = removeQuotes(result?.get(Common.JSON_TITLE).toString())
+                    val posterPath = removeQuotes(result?.get(JSON_POSTER).toString())
+                    val movieID = removeQuotes(result?.get(JSON_ID).toString())
+                    val title = removeQuotes(result?.get(JSON_TITLE).toString())
                     moviesFound.add(MovieItemSearch(posterPath, movieID, title, false))
                 }
                 movieList.value = moviesFound
@@ -96,25 +85,17 @@ class MovieRepository(context: Context) {
         })
     }
 
-
-    fun clearMovieDetails() {
-        movieDetails.value = MovieItemDetails(
-            Common.STRING_EMPTY,Common.STRING_EMPTY,Common.STRING_EMPTY,Common.STRING_EMPTY,
-            Common.STRING_EMPTY,Common.STRING_EMPTY,Common.STRING_EMPTY,Common.STRING_EMPTY,
-            Common.STRING_EMPTY,Common.STRING_EMPTY,Common.STRING_EMPTY,Common.STRING_EMPTY,
-            Common.STRING_EMPTY,false
-        )
-    }
-
-    fun setMovieDetails(id: String, apiKey: String) {
+    fun fetchMovieDetailsAPI(id: String, apiKey: String) {
+        movieDetails.value = MovieItemDetails()
         val retrofit = Retrofit.Builder()
-            .baseUrl(Common.BASE_URL_DETAILS)
+            .baseUrl(BASE_URL_DETAILS)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         val movieApi = retrofit.create(MovieApi::class.java)
-        val jsonCall = movieApi.getMovieDetails(id, apiKey, Common.EXTRA_APPEND_VAL)
+        val jsonCall = movieApi.getMovieDetailsAPI(id, apiKey, EXTRA_APPEND_VAL)
         jsonCall.enqueue(object: Callback<MovieDetails>{
             override fun onFailure(call: Call<MovieDetails>, t: Throwable) {
+
             }
 
             override fun onResponse(call: Call<MovieDetails>, response: Response<MovieDetails>) {
@@ -138,6 +119,20 @@ class MovieRepository(context: Context) {
                 movieDetails.value = MovieItemDetails(backdropPath, budget, genres, imdbID, language, title, overview, release, revenue, length, rating, trailerPath, cast, false)
             }
         })
+    }
+
+    private fun removeQuotes(str: String?): String {
+        if (str == null)
+            return Common.STRING_EMPTY
+        return str.replace(STRING_QUOTE, Common.STRING_EMPTY)
+    }
+
+    private fun setMoviesLoadState() {
+        val moviesLoadState = ArrayList<MovieItemSearch>()
+        for (i in MOVIE_START_COUNTER..DEFAULT_PAGE_MOVIES) {
+            moviesLoadState.add(MovieItemSearch())
+        }
+        movieList.value = moviesLoadState
     }
 
     private fun findYoutubeTrailerKey(list: JsonArray?): String {
@@ -178,13 +173,65 @@ class MovieRepository(context: Context) {
         return castList
     }
 
-    fun getAllSavedMovies(): LiveData<List<MovieSaved>> = movieSavedList
+    //endregion
 
-    suspend fun saveMovie(movie: MovieSaved) = movieDao.insertMovie(movie)
+    //region Database Functions
 
-    suspend fun deleteAllSavedMovies() = movieDao.deleteAllMovies()
+    fun fetchMovieDetailsLocal(id: String) {
+        if (movieSavedList.value == null)
+            return
+        movieDetails.value = MovieItemDetails()
+        for (movie in movieSavedList.value!!.iterator()) {
+            if (movie.movieID == id) {
+                movieDetails.value = MovieItemDetails(
+                    movie.backdropPath, movie.budget, movie.genres, movie.imdbID, movie.language,
+                    movie.title, movie.overview, movie.release, movie.revenue, movie.length,
+                    movie.rating, movie.trailer, movie.cast, true)
+            }
+        }
+    }
 
-    suspend fun deleteSavedMovie(movie: MovieSaved) = movieDao.deleteMovie(movie)
+    fun isMovieLocal(id: String) : Boolean {
+        if (movieSavedList.value == null)
+            return false
+        var local = false
+        for (movie in movieSavedList.value!!.iterator()) {
+            if (id == movie.movieID)
+                local = true
+        }
+        return local
+    }
 
-    fun loadMovieWithID(id: String): LiveData<MovieSaved> = movieDao.loadMovieWithID(id)
+    fun getMoviesLocal(): LiveData<List<MovieSaved>> = movieSavedList
+
+    suspend fun saveMovieLocal(movie: MovieSaved) = movieDao.insertMovie(movie)
+
+    suspend fun deleteMoviesLocal() = movieDao.deleteAllMovies()
+
+    suspend fun deleteMovieLocal(movie: MovieSaved) = movieDao.deleteMovie(movie)
+
+    //endregion
+
+    //region Functions For Both Data Sources
+
+    fun getMovieDetails(): LiveData<MovieItemDetails> {
+        return movieDetails
+    }
+
+    fun getMaxPages(): Int = maxPages
+
+    //endregion
+
+    companion object {
+        private const val BASE_URL_SEARCH = "https://api.themoviedb.org/3/discover/"
+        private const val BASE_URL_DETAILS = "https://api.themoviedb.org/3/movie/"
+        private const val STRING_QUOTE = "\""
+        private const val DEFAULT_LANG = "en-US"
+        private const val EXTRA_APPEND_VAL = "videos,credits"
+        private const val DEFAULT_PAGE_MOVIES = 20
+        private const val MOVIE_START_COUNTER = 1
+        private const val JSON_POSTER = "poster_path"
+        private const val JSON_ID = "id"
+        private const val JSON_TITLE = "title"
+    }
 }

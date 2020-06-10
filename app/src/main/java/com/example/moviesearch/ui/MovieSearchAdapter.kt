@@ -43,6 +43,10 @@ class MovieSearchAdapter(val movieList: List<MovieItemSearch>, private val onCli
         }
 
         fun bind(movieItem: MovieItemSearch) {
+            loadRVMovieBehaviour(movieItem)
+        }
+
+        private fun loadRVMovieBehaviour(movieItem: MovieItemSearch) {
             if (!movieItem.loading) {
                 if (Common.checkForValidJSonReturn(movieItem.posterPath) && !movieItem.hasBeenFetched) {
                     Common.fetchImageGlide(
@@ -60,7 +64,6 @@ class MovieSearchAdapter(val movieList: List<MovieItemSearch>, private val onCli
             else {
                 itemView.pbLoading.visibility = View.VISIBLE
             }
-
         }
     }
 }
