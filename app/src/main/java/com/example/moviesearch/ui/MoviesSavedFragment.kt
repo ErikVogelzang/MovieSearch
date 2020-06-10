@@ -37,19 +37,16 @@ class MoviesSavedFragment : Fragment() {
             moviesSaved.clear()
             moviesSavedAsData.clear()
             moviesSavedAsData.addAll(it)
-
-            val oldSize = moviesSaved.size
             moviesSaved.clear()
-            movieAdapter.notifyItemRangeRemoved(Common.ARRAY_FIRST, oldSize)
             moviesSavedAsData.addAll(it)
             saved = false
             for (movie in it) {
                 moviesSaved.add(MovieItemSearch(movie.posterPath, movie.movieID, movie.title, false))
                 saved = true
             }
-            movieAdapter.notifyItemRangeInserted(Common.ARRAY_FIRST, moviesSaved.size)
             if (this::menu.isInitialized)
                 updateDeleteIcon(menu)
+            movieAdapter.notifyDataSetChanged()
         })
     }
 
