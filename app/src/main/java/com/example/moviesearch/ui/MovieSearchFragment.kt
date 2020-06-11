@@ -113,7 +113,8 @@ class MovieSearchFragment : Fragment() {
         if (movieList.size != destroyedMovieList.size || destroyedMovieList.size == ZERO)
             hasChanged = true
         else {
-            for (pos in Common.ARRAY_FIRST..increaseOrDecreaseNumber(destroyedMovieList.size,false)) {
+            for (pos in Common.ARRAY_FIRST..increaseOrDecreaseNumber(destroyedMovieList.size,
+                false)) {
                 if (movieList[pos].movieID != destroyedMovieList[pos].movieID)
                     hasChanged = true
             }
@@ -134,11 +135,11 @@ class MovieSearchFragment : Fragment() {
         ddSortByMain.adapter = setSpinnerAdapter(sortOptions.toList())
         ddSortByDirection.adapter = setSpinnerAdapter(sortDirections.toList())
         ddSortByYear.adapter = setSpinnerAdapter(sortByYearOptions.toList())
-        ddCatPrimary.onItemSelectedListener = initSpinner("PRI", this::onPrimaryCatItemSelect)
-        ddCatSecondary.onItemSelectedListener = initSpinner("SEC")
-        ddSortByMain.onItemSelectedListener = initSpinner("MAIN")
-        ddSortByDirection.onItemSelectedListener = initSpinner("DIR")
-        ddSortByYear.onItemSelectedListener = initSpinner("YEAR", this::onSortByYearItemSelect)
+        ddCatPrimary.onItemSelectedListener = initSpinner(this::onPrimaryCatItemSelect)
+        ddCatSecondary.onItemSelectedListener = initSpinner()
+        ddSortByMain.onItemSelectedListener = initSpinner()
+        ddSortByDirection.onItemSelectedListener = initSpinner()
+        ddSortByYear.onItemSelectedListener = initSpinner(this::onSortByYearItemSelect)
         if (restoreFromDestroyed) {
             ddCatPrimary.setSelection(catPriSelected)
             ddSortByMain.setSelection(sortByMainSelected)
@@ -151,7 +152,8 @@ class MovieSearchFragment : Fragment() {
         }
     }
 
-    private fun initSpinner(debug: String, onSelect: ((pos: Int) -> Unit)? = null): AdapterView.OnItemSelectedListener {
+    private fun initSpinner(onSelect: ((pos: Int) -> Unit)? = null):
+            AdapterView.OnItemSelectedListener {
         return object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(parent: AdapterView<*>?) {
             }
@@ -164,7 +166,6 @@ class MovieSearchFragment : Fragment() {
             ) {
                 if (onSelect != null)
                     onSelect(position)
-                Log.i("sgdgdsgds", debug)
                 categoriesChanged()
             }
         }
@@ -206,7 +207,9 @@ class MovieSearchFragment : Fragment() {
     private fun onMovieClick(movieItem: MovieItemSearch) {
         if (movieItem.loading)
             return
-        findNavController().navigate(MovieSearchFragmentDirections.actionMovieSearchFragmentToDetailsFragment(movieItem.movieID.toInt(), movieItem.posterPath))
+        findNavController().navigate(MovieSearchFragmentDirections.
+            actionMovieSearchFragmentToDetailsFragment(movieItem.movieID.toInt(),
+                movieItem.posterPath))
     }
 
     private fun setSpinnerAdapter(list: List<String>): ArrayAdapter<String> {
@@ -221,7 +224,7 @@ class MovieSearchFragment : Fragment() {
         return object : TextView.OnEditorActionListener {
             override fun onEditorAction(v: TextView?, actionId: Int, event: KeyEvent?): Boolean {
                 when (actionId) {
-                    EditorInfo.IME_ACTION_DONE, EditorInfo.IME_ACTION_NEXT, EditorInfo.IME_ACTION_PREVIOUS -> {
+                    EditorInfo.IME_ACTION_DONE -> {
                         if (v != null)
                             hideKeyboard(v)
                         onDone()
@@ -289,9 +292,12 @@ class MovieSearchFragment : Fragment() {
     //region API Functions
 
     private fun fetchMovies() {
-        if (ddCatPrimary.selectedItemPosition == Common.ARRAY_FIRST || ddSortByMain.selectedItemPosition == Common.ARRAY_FIRST)
+        if (ddCatPrimary.selectedItemPosition == Common.ARRAY_FIRST ||
+            ddSortByMain.selectedItemPosition == Common.ARRAY_FIRST)
             return
-        movieViewModel.fetchMoviesAPI(getGenreQuery(), getSortByQuery(), getString(R.string.movie_db_api_key), getYearGteQuery(), getYearLteQuery(), etPage.text.toString().toInt())
+        movieViewModel.fetchMoviesAPI(getGenreQuery(), getSortByQuery(),
+            getString(R.string.movie_db_api_key), getYearGteQuery(), getYearLteQuery(),
+            etPage.text.toString().toInt())
     }
 
     private fun getGenreID(genre: String) : String {
@@ -351,7 +357,8 @@ class MovieSearchFragment : Fragment() {
         val year = etYear1.text.toString()
         if (filter != STRING_LTE && filter != STRING_LT) {
             if (filter == STRING_GT || filter == STRING_GTLT)
-                return getYearFormatted(increaseOrDecreaseStringNumber(year, true), true)
+                return getYearFormatted(increaseOrDecreaseStringNumber(year, true),
+                    true)
             return getYearFormatted(year, true)
         }
         return Common.STRING_EMPTY
@@ -366,8 +373,10 @@ class MovieSearchFragment : Fragment() {
 
         val year2 = etYear2.text.toString()
         return when(filter) {
-            STRING_GTLT -> getYearFormatted(increaseOrDecreaseStringNumber(year2, false), false)
-            STRING_LT -> getYearFormatted(increaseOrDecreaseStringNumber(year1, false), false)
+            STRING_GTLT -> getYearFormatted(increaseOrDecreaseStringNumber(year2, false),
+                false)
+            STRING_LT -> getYearFormatted(increaseOrDecreaseStringNumber(year1, false),
+                false)
             STRING_GTELTE -> getYearFormatted(year2, false)
             else -> Common.STRING_EMPTY
         }
@@ -406,7 +415,9 @@ class MovieSearchFragment : Fragment() {
             etYear2.visibility = View.GONE
     }
 
-    private fun increaseOrDecreaseStringNumber(number: String, increase: Boolean, amount: Int = ONE) : String {
+    private fun increaseOrDecreaseStringNumber(number: String, increase: Boolean, amount: Int = ONE)
+            : String
+    {
         val newNumber = number.toIntOrNull()
         if (newNumber == null)
             return Common.STRING_EMPTY
@@ -421,32 +432,30 @@ class MovieSearchFragment : Fragment() {
     }
 
     private fun onPageTextDone() {
-        var pageNumber = etPage.text.toString().toIntOrNull()
-        if (pageNumber == null || pageNumber == ZERO) {
-            pageNumber = ONE
-        }
-        else if (pageNumber > maxPages) {
-            pageNumber = maxPages
-        }
-        etPage.setText(pageNumber.toString())
         restoreFromDestroyed = false
+        var pageNumber = etPage.text.toString().toIntOrNull()
+        if (pageNumber == null || pageNumber == ZERO)
+            pageNumber = ONE
+        else if (pageNumber > maxPages)
+            pageNumber = maxPages
+        etPage.setText(pageNumber.toString())
         updateTextState()
     }
 
     private fun onPrevBtnClick() {
+        restoreFromDestroyed = false
         if (etPage.text.toString().toInt() == ONE)
             return
         etPage.setText(increaseOrDecreaseStringNumber(etPage.text.toString(), false))
         updateTextState()
-        restoreFromDestroyed = false
     }
 
     private fun onNextBtnClick() {
+        restoreFromDestroyed = false
         if (etPage.text.toString().toInt() == maxPages)
             return
         etPage.setText(increaseOrDecreaseStringNumber(etPage.text.toString(), true))
         updateTextState()
-        restoreFromDestroyed = false
     }
 
     private fun categoriesChanged(newCategories: Boolean = true) {
@@ -486,9 +495,11 @@ class MovieSearchFragment : Fragment() {
         val filter = ddSortByYear.selectedItem.toString()
         if (year1 != null && year2 != null) {
             if (filter == STRING_GTELTE && year1 > year2)
-                etYear2.setText(increaseOrDecreaseStringNumber(etYear1.text.toString(), true))
+                etYear2.setText(increaseOrDecreaseStringNumber(etYear1.text.toString(),
+                    true))
             else if (filter == STRING_GTLT && (year2-year1) < GT_LT_YEAR_DIFF)
-                etYear2.setText(increaseOrDecreaseStringNumber(etYear1.text.toString(), true, GT_LT_YEAR_DIFF))
+                etYear2.setText(increaseOrDecreaseStringNumber(etYear1.text.toString(),
+                    true, GT_LT_YEAR_DIFF))
         }
         updateTextState()
     }

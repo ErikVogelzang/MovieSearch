@@ -1,7 +1,6 @@
 package com.example.moviesearch.database
 
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.moviesearch.api.MovieApi
@@ -12,6 +11,7 @@ import com.example.moviesearch.model.MovieItemDetails
 import com.example.moviesearch.model.MovieItemSearch
 import com.example.moviesearch.model.MovieSaved
 import com.google.gson.JsonArray
+import org.json.JSONArray
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -25,8 +25,11 @@ class MovieRepository(context: Context) {
 
     //region Initialization
 
+    //List that contains movies retrieved from TMDB Discover.
     private val movieList = MutableLiveData<List<MovieItemSearch>>()
+    //List that contains movies retrieved from the database.
     private val movieSavedList: LiveData<List<MovieSaved>>
+    //Contains details information about a movie.
     private var movieDetails = MutableLiveData<MovieItemDetails>()
     private val movieDao: MovieDao
     private var maxPages = 0
@@ -41,11 +44,11 @@ class MovieRepository(context: Context) {
 
     //region API Functions
 
-    fun getMoviesAPI(): LiveData<List<MovieItemSearch>> {
-        return movieList
-    }
 
-    fun fetchMovieListAPI(genres: String, sortBy: String, apiKey: String, yearGte: String, yearLte: String, page: Int) {
+    fun getMoviesAPI(): LiveData<List<MovieItemSearch>> = movieList
+
+    fun fetchMovieListAPI(genres: String, sortBy: String, apiKey: String, yearGte: String,
+                          yearLte: String, page: Int) {
         setMoviesLoadState()
         val moviesFound = ArrayList<MovieItemSearch>()
 
@@ -54,7 +57,7 @@ class MovieRepository(context: Context) {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         val movieApi = retrofit.create(MovieApi::class.java)
-        val jsonCall = movieApi.getMoviesAPI(apiKey, DEFAULT_LANG, sortBy, false, false, page, genres, yearGte, yearLte)
+        val jsonCall = movieApi.getMoviesDiscover(apiKey, DEFAULT_LANG, sortBy, false, false, page, genres, yearGte, yearLte)
         jsonCall.enqueue(object: Callback<MovieList>{
             override fun onFailure(call: Call<MovieList>, t: Throwable) {
                 movieList.value = null
@@ -92,7 +95,7 @@ class MovieRepository(context: Context) {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         val movieApi = retrofit.create(MovieApi::class.java)
-        val jsonCall = movieApi.getMovieDetailsAPI(id, apiKey, EXTRA_APPEND_VAL)
+        val jsonCall = movieApi.getMovieDetails(id, apiKey, EXTRA_APPEND_VAL)
         jsonCall.enqueue(object: Callback<MovieDetails>{
             override fun onFailure(call: Call<MovieDetails>, t: Throwable) {
 
@@ -113,10 +116,14 @@ class MovieRepository(context: Context) {
                 val revenue = removeQuotes(results?.getRevenue())
                 val length = removeQuotes(results?.getRuntime())
                 val rating = removeQuotes(results?.getRating())
-                val trailerPath = findYoutubeTrailerKey(results?.getTrailers())
-                val genres = getGenresFromArray(results?.getGenres())
-                val cast = getCastFromArray(results?.getCast())
-                movieDetails.value = MovieItemDetails(backdropPath, budget, genres, imdbID, language, title, overview, release, revenue, length, rating, trailerPath, cast, false)
+                val trailerPath = getDataFromJSONArray(results?.getTrailers(),
+                    this@MovieRepository::findYoutubeTrailerKey)
+                val genres = getDataFromJSONArray(results?.getGenres(),
+                    this@MovieRepository::getNames)
+                val cast = getDataFromJSONArray(results?.getCast(), this@MovieRepository::getNames)
+                movieDetails.value = MovieItemDetails(backdropPath, budget, genres, imdbID,
+                    language, title, overview, release, revenue, length, rating, trailerPath, cast,
+                    false)
             }
         })
     }
@@ -135,42 +142,32 @@ class MovieRepository(context: Context) {
         movieList.value = moviesLoadState
     }
 
-    private fun findYoutubeTrailerKey(list: JsonArray?): String {
-        if (list == null)
+    private fun findYoutubeTrailerKey(pos: Int, list: JsonArray): String {
+        if (
+            removeQuotes(list.get(pos).asJsonObject.get(JSON_SITE).asString) == RESULT_YOUTUBE
+            && removeQuotes(list.get(pos).asJsonObject.get(JSON_TYPE).asString) == RESULT_TRAILER
+        )
+            return removeQuotes(list.get(pos).asJsonObject.get(JSON_KEY).asString)
+        else
             return Common.STRING_EMPTY
-
-        for (i in 0 until list.size()) {
-            if (
-                removeQuotes(list.get(i).asJsonObject.get("site").asString) == "YouTube"
-                && removeQuotes(list.get(i).asJsonObject.get("type").asString) == "Trailer"
-            )
-                return removeQuotes(list.get(i).asJsonObject.get("key").asString)
-        }
-        return Common.STRING_EMPTY
     }
 
-    private fun getGenresFromArray(list: JsonArray?): String {
-        if (list == null)
-            return Common.STRING_EMPTY
-        var genreList = Common.STRING_EMPTY
-        for (i in 0 until list.size()) {
-            if (i > 0)
-                genreList = genreList.plus(", ")
-            genreList = genreList.plus(removeQuotes(list.get(i).asJsonObject.get("name").asString))
-        }
-        return genreList
-    }
+    private fun getNames(pos: Int, list: JsonArray): String = removeQuotes(list.get(pos)
+        .asJsonObject.get(JSON_NAME).asString)
 
-    private fun getCastFromArray(list: JsonArray?): String {
+    private fun getDataFromJSONArray(list: JsonArray?, getValue: (Int, JsonArray) -> String,
+                                     singleValue: Boolean = false): String {
         if (list == null)
             return Common.STRING_EMPTY
-        var castList = Common.STRING_EMPTY
-        for (i in 0 until list.size()) {
-            if (i > 0)
-                castList = castList.plus(", ")
-            castList = castList.plus(removeQuotes(list.get(i).asJsonObject.get("name").asString))
+        var output = Common.STRING_EMPTY
+        for (i in Common.ARRAY_FIRST until list.size()) {
+            if (i > Common.ARRAY_FIRST)
+                output = output.plus(STRING_SPACING)
+            output += getValue(i, list)
+            if (singleValue)
+                return output
         }
-        return castList
+        return output
     }
 
     //endregion
@@ -186,7 +183,7 @@ class MovieRepository(context: Context) {
                 movieDetails.value = MovieItemDetails(
                     movie.backdropPath, movie.budget, movie.genres, movie.imdbID, movie.language,
                     movie.title, movie.overview, movie.release, movie.revenue, movie.length,
-                    movie.rating, movie.trailer, movie.cast, true)
+                    movie.rating, movie.trailer, movie.cast, false)
             }
         }
     }
@@ -214,9 +211,7 @@ class MovieRepository(context: Context) {
 
     //region Functions For Both Data Sources
 
-    fun getMovieDetails(): LiveData<MovieItemDetails> {
-        return movieDetails
-    }
+    fun getMovieDetails(): LiveData<MovieItemDetails> = movieDetails
 
     fun getMaxPages(): Int = maxPages
 
@@ -226,12 +221,19 @@ class MovieRepository(context: Context) {
         private const val BASE_URL_SEARCH = "https://api.themoviedb.org/3/discover/"
         private const val BASE_URL_DETAILS = "https://api.themoviedb.org/3/movie/"
         private const val STRING_QUOTE = "\""
+        private const val STRING_SPACING = ", "
         private const val DEFAULT_LANG = "en-US"
         private const val EXTRA_APPEND_VAL = "videos,credits"
         private const val DEFAULT_PAGE_MOVIES = 20
         private const val MOVIE_START_COUNTER = 1
         private const val JSON_POSTER = "poster_path"
-        private const val JSON_ID = "id"
         private const val JSON_TITLE = "title"
+        private const val JSON_ID = "id"
+        private const val JSON_SITE = "site"
+        private const val JSON_TYPE = "type"
+        private const val JSON_KEY = "key"
+        private const val JSON_NAME = "name"
+        private const val RESULT_YOUTUBE = "YouTube"
+        private const val RESULT_TRAILER = "Trailer"
     }
 }

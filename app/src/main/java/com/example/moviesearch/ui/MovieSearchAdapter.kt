@@ -10,7 +10,8 @@ import com.example.moviesearch.common.Common
 import com.example.moviesearch.model.MovieItemSearch
 import kotlinx.android.synthetic.main.item_movie.view.*
 
-class MovieSearchAdapter(val movieList: List<MovieItemSearch>, private val onClick: (MovieItemSearch) -> Unit) :
+class MovieSearchAdapter(val movieList: List<MovieItemSearch>,
+                         private val onClick: (MovieItemSearch) -> Unit) :
     RecyclerView.Adapter<MovieSearchAdapter.ViewHolder>() {
 
     private lateinit var context: Context

@@ -47,7 +47,6 @@ class MoviesSavedFragment : Fragment() {
             if (this::menu.isInitialized)
                 updateDeleteIcon(menu)
             movieAdapter.notifyDataSetChanged()
-
         })
     }
 
@@ -72,7 +71,7 @@ class MoviesSavedFragment : Fragment() {
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 movieViewModel.deleteMovieLocal(moviesSavedAsData[viewHolder.adapterPosition])
-                snack = showUndoSnackbar(getString(R.string.deleted_movie_text), this@MoviesSavedFragment::onDeleteUndo, requireView(), resources)
+                snack = showUndoSnackbar(getString(R.string.deleted_movie_text), movieViewModel, requireView(), resources)
             }
         }
     }
@@ -108,7 +107,7 @@ class MoviesSavedFragment : Fragment() {
         return when (item.itemId) {
             R.id.action_delete_all_movies -> {
                 movieViewModel.deleteMoviesLocal()
-                snack = showUndoSnackbar(getString(R.string.deleted_all_movies_text), this::onDeleteUndo, requireView(), resources)
+                snack = showUndoSnackbar(getString(R.string.deleted_all_movies_text), movieViewModel, requireView(), resources)
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -135,10 +134,6 @@ class MoviesSavedFragment : Fragment() {
         if (movieItem.loading)
             return
         findNavController().navigate(MoviesSavedFragmentDirections.actionMoviesSavedFragmentToDetailsFragment(movieItem.movieID.toInt(), movieItem.posterPath))
-    }
-
-    private fun onDeleteUndo() {
-        Common.onUndo(movieViewModel)
     }
 
     private fun updateDeleteIcon(passedMenu: Menu) {

@@ -15,8 +15,9 @@ import com.example.moviesearch.model.MovieViewModel
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.fragment_details.*
 import android.content.Intent
-import android.util.Log
 import android.webkit.*
+import android.widget.ImageView
+import android.widget.ProgressBar
 import android.widget.Toast
 
 
@@ -42,16 +43,17 @@ class MovieDetailsFragment : Fragment() {
                 if (saved)
                     movieViewModel.fetchMovieDetailsLocal(args.movieID.toString())
                 else
-                    movieViewModel.fetchMovieDetailsAPI(args.movieID.toString(), getString(R.string.movie_db_api_key))
+                    movieViewModel.fetchMovieDetailsAPI(args.movieID.toString(),
+                        getString(R.string.movie_db_api_key))
             }
         })
 
         movieViewModel.getMovieDetails().observe(this.viewLifecycleOwner, Observer {
             if (!viewLoaded) {
                 movieDetails = it
-                imageLoadCheck()
-                textLoadCheck()
-                videoLoadCheck()
+                initImageViews()
+                initTextViews()
+                initWebView()
                 if (it.title != Common.STRING_EMPTY)
                     viewLoaded = true
             }
@@ -62,7 +64,7 @@ class MovieDetailsFragment : Fragment() {
         setHasOptionsMenu(true)
     }
 
-    private fun videoLoadCheck() {
+    private fun initWebView() {
         if (movieDetails.trailer != Common.STRING_EMPTY) {
             ivNoVideo.visibility = View.VISIBLE
             pbVideo.visibility = View.VISIBLE
@@ -81,9 +83,7 @@ class MovieDetailsFragment : Fragment() {
 
                 override fun onPageFinished(view: WebView?, url: String?) {
                     super.onPageFinished(view, url)
-                    if (wvNoError) {
-                        loadYoutube()
-                    }
+                    loadYoutube()
                 }
             }
             wvVideo.loadUrl(BASE_IMDB_URL)
@@ -94,7 +94,7 @@ class MovieDetailsFragment : Fragment() {
         }
     }
 
-    private fun textLoadCheck() {
+    private fun initTextViews() {
         setDetailsText(tvBudgetText, tvBudget, movieDetails.budget)
         setDetailsText(tvCastText, tvCast, movieDetails.cast)
         setDetailsText(tvGenresText, tvGenres, movieDetails.genres)
@@ -107,30 +107,22 @@ class MovieDetailsFragment : Fragment() {
         setDetailsText(tvLanguageText, tvLanguage, movieDetails.language)
     }
 
-    private fun imageLoadCheck() {
-        if (!Common.checkForValidJSonReturn(args.posterPath))
-            ivPoster.setImageResource(R.drawable.no_image_poster)
-        if (!Common.checkForValidJSonReturn(movieDetails.backdropPath))
-            ivBackdrop.setImageResource(R.drawable.no_image_backdrop)
-        if (Common.checkForValidJSonReturn(args.posterPath)) {
-            pbPoster.visibility = View.VISIBLE
+    private fun initImageViews() {
+        setImageView(ivPoster, pbPoster, args.posterPath)
+        setImageView(ivBackdrop, pbBackdrop, movieDetails.backdropPath)
+    }
+
+    private fun setImageView(iv: ImageView, pb: ProgressBar, path: String) {
+        if (Common.checkForValidJSonReturn(path)) {
+            pb.visibility = View.VISIBLE
             Common.fetchImageGlide(
-                requireContext(), ivPoster, pbPoster,
-                args.posterPath
+                requireContext(), iv, pb,
+                path
             )
         }
         else {
-            pbPoster.visibility = View.GONE
-        }
-        if (Common.checkForValidJSonReturn(movieDetails.backdropPath)) {
-            pbBackdrop.visibility = View.VISIBLE
-            Common.fetchImageGlide(
-                requireContext(), ivBackdrop, pbBackdrop,
-                movieDetails.backdropPath
-            )
-        }
-        else {
-            pbBackdrop.visibility = View.GONE
+            iv.setImageResource(R.drawable.no_image_poster)
+            pb.visibility = View.GONE
         }
     }
 
@@ -150,11 +142,9 @@ class MovieDetailsFragment : Fragment() {
         wvVideo.webViewClient = null
         wvVideo.webChromeClient = WebChromeClient()
         wvVideo.settings.javaScriptEnabled = true
-        wvVideo.loadData(
-            "<html><body style='margin:0;padding:0;'><iframe width=\"100%\" height=\"100%\" src=\"https://www.youtube.com/embed/".plus(
-                movieDetails.trailer
-            ).plus("\" frameborder=\"0\" allowfullscreen></iframe>"), "text/html", "utf-8"
-        )
+        wvVideo.loadData(YOUTUBE_BODY.plus(YOUTUBE_IFRAME_START).plus(YOUTUBE_EMBED)
+            .plus(movieDetails.trailer).plus(YOUTUBE_IFRAME_END),
+            YOUTUBE_MIME_TYPE, YOUTUBE_ENCODING)
         ivNoVideo.visibility = View.INVISIBLE
         pbVideo.visibility = View.INVISIBLE
         wvVideo.visibility = View.VISIBLE
@@ -198,12 +188,12 @@ class MovieDetailsFragment : Fragment() {
         return when (item.itemId) {
             R.id.action_save_movie -> {
                 movieViewModel.saveMovieLocal(saveMovie())
-                snack = Common.showUndoSnackbar(getString(R.string.saved_movie_text), this::onSaveUndo, requireView(), resources)
+                snack = Common.showUndoSnackbar(getString(R.string.saved_movie_text), movieViewModel, requireView(), resources)
                 true
             }
             R.id.action_delete_movie -> {
                 movieViewModel.deleteMovieLocal(saveMovie())
-                snack = Common.showUndoSnackbar(getString(R.string.deleted_movie_text), this::onDeleteUndo, requireView(), resources)
+                snack = Common.showUndoSnackbar(getString(R.string.deleted_movie_text), movieViewModel, requireView(), resources)
                 true
             }
             android.R.id.home -> {
@@ -242,14 +232,6 @@ class MovieDetailsFragment : Fragment() {
         )
     }
 
-    private fun onSaveUndo() {
-        Common.onUndo(movieViewModel)
-    }
-
-    private fun onDeleteUndo() {
-        Common.onUndo(movieViewModel)
-    }
-
     private fun shareMovie() {
         if (movieDetails.imdbID != Common.STRING_EMPTY) {
             val whatsappIntent = Intent(Intent.ACTION_SEND)
@@ -270,6 +252,14 @@ class MovieDetailsFragment : Fragment() {
         }
     }
 
+    private fun showToast(text: String) {
+        Toast.makeText(
+            requireContext(),
+            text,
+            Toast.LENGTH_SHORT
+        ).show()
+    }
+
     private fun updateMenu() {
         if (this::menu.isInitialized) {
             if (saved) {
@@ -284,22 +274,16 @@ class MovieDetailsFragment : Fragment() {
 
     //endregion
 
-    //region Other Functions
-
-    private fun showToast(text: String) {
-        Toast.makeText(
-            requireContext(),
-            text,
-            Toast.LENGTH_SHORT
-        ).show()
-    }
-
-    //endregion
-
     companion object {
         private var saved = false
         private const val BASE_IMDB_URL = "https://www.imdb.com/title/"
         private const val WHATSAPP_TYPE = "text/plain"
         private const val WHATSAPP_PACKAGE = "com.whatsapp"
+        private const val YOUTUBE_BODY = "<html><body style='margin:0;padding:0;'>"
+        private const val YOUTUBE_IFRAME_START = "<iframe width=\"100%\" height=\"100%\" src=\""
+        private const val YOUTUBE_EMBED = "https://www.youtube.com/embed/"
+        private const val YOUTUBE_IFRAME_END = "\" frameborder=\"0\" allowfullscreen></iframe>"
+        private const val YOUTUBE_MIME_TYPE = "text/html"
+        private const val YOUTUBE_ENCODING = "utf-8"
     }
 }

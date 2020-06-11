@@ -6,8 +6,9 @@ import retrofit2.http.Url
 
 interface MovieApi {
 
+    //Get movies via the TMDB Discover feature.
     @GET(BASE_QUERY_SEARCH)
-    fun getMoviesAPI(
+    fun getMoviesDiscover(
         @Query(KEY_QUERY) apiKey: String,
         @Query(LANG_QUERY) language: String,
         @Query(SORT_QUERY) sortBy: String,
@@ -19,14 +20,17 @@ interface MovieApi {
         @Query(YEAR_LTE_QUERY) yearLte: String
     ): Call<MovieList>
 
+    //Get detailed info for a single movie from TMDB.
     @GET
-    fun getMovieDetailsAPI(
+    fun getMovieDetails(
         @Url url: String,
         @Query(KEY_QUERY) apiKey: String,
         @Query(APPEND_QUERY) extra: String
     ): Call<MovieDetails>
 
     companion object {
+
+        //Discover query arguments.
         private const val BASE_QUERY_SEARCH = "movie?"
         private const val KEY_QUERY = "api_key"
         private const val LANG_QUERY = "language"
@@ -36,6 +40,8 @@ interface MovieApi {
         private const val PAGE_QUERY = "page"
         private const val YEAR_GTE_QUERY = "primary_release_date.gte"
         private const val YEAR_LTE_QUERY = "primary_release_date.lte"
+
+        //Details query arguments.
         private const val GENRES_QUERY = "with_genres"
         private const val APPEND_QUERY = "append_to_response"
     }
